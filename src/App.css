@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
 
 :root {
 	--padding: 1rem;
@@ -9,15 +9,15 @@
 	--green: #87d68d;
 
 	--default-background: #bcd3f2;
+	--headers: #201e50;
 	--default-text: var(--black);
-	--default-font: "Roboto", sans-serif;
+	--default-font: "Kanit", sans-serif;
 
 	--header-background: #80a4ed;
 
 	--main-menu-background: var(--black); 
 	--main-menu-text: var(--white);
 }
-
 
 * {
 	margin: 0;
@@ -31,9 +31,67 @@ body {
 	font-family: var(--default-font);
 }
 
+header {
+	background: var(--header-background);
+	color: var(--default-text);
+	padding: var(--padding);
+	height: 8rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 2rem;
+}
+
+header h1 {
+	width: 60rem;
+	max-width: 100%;
+	margin: auto;
+	padding: 0 var(--padding);
+}
+
+h1 {
+	font-size: 3rem;
+	text-align: center;
+	color: var(--headers);
+}
+
+h2 {
+	color: var(--headers);
+	margin-top: 1.5rem;
+}
+
+.front-page-info {
+	text-align: center;
+	margin-bottom: 2rem;
+}
+
+.front-page .buttons button {
+	font: inherit;
+	padding: .5rem;
+	border-radius: .5rem;
+}
+@media screen and (min-width: 800px) {
+	.front-page .buttons {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
+	}
+}
+
 a {
 	color: var(--default-text);
 }
+
+
+main {
+	width: 60rem;
+	max-width: 100%;
+	margin: 0 auto;
+	padding: var(--padding);
+}
+
+
+/*
 
 .main-menu {
 	background: var(--main-menu-background);
@@ -86,31 +144,6 @@ a {
 
 .menu-button.hidden {
 	display: none;
-}
-
-header {
-	background: var(--header-background);
-	color: var(--default-text);
-	padding: var(--padding);
-	height: 6rem;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-header h1 {
-	font-size: 2rem;
-	width: 60rem;
-	max-width: 100%;
-	margin: auto;
-	padding: 0 var(--padding);
-}
-
-.wrapper {
-	width: 60rem;
-	max-width: 100%;
-	margin: 0 auto;
-	padding: var(--padding);
 }
 
 .front-page p {
@@ -456,3 +489,4 @@ dialog button, .favstar-input button {
 		justify-content: center;
 	}
 }
+*/
