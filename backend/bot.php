@@ -4,10 +4,12 @@
 // Get MySQL and Bluesky login details
 include('secrets.php');
 
+// Get fetch function
+include('functions.php');
+
 // Get Tracery parser
 include('tracery-parser.php');
 
-//
 // Connect to MySQL
 $conn = mysqli_connect(
 	$mysql_host, 
@@ -16,156 +18,15 @@ $conn = mysqli_connect(
 	$mysql_db
 );
 
-// Simplified function to send a CURL post request
-function fetch( $url, $options = [] ) {
-	if (!$url) {
-		return;
-	}
-	$curl = curl_init();
-
-	$headers = [
-		'Content-Type: application/json',
-		'Accept: application/json'
-	];
-
-	if (isset($options['token'])) {
-		$headers[] = 'Authorization: Bearer ' . $options['token'];
-	}
-
-	$querystring = '';
-	$method = 'POST';
-	if (isset($options['method']) && $options['method'] == 'GET') {
-		$method = 'GET';
-		if (isset($options['query'])) {
-			$querystring = $options['query'];
-		}
-	}
-
-	if (isset($options['body'])) {
-		$data = $options['body'];
-	}
-
-	curl_setopt_array($curl, array(
-		CURLOPT_URL => $url . $querystring,
-		CURLOPT_RETURNTRANSFER => true,
-	  	CURLOPT_ENCODING => '',
-		CURLOPT_MAXREDIRS => 10,
-		CURLOPT_TIMEOUT => 0,
-		CURLOPT_FOLLOWLOCATION => true,
-		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-
-		CURLOPT_HTTPHEADER => $headers,
-	));
-
-	if ($method === 'POST') {
-		// If POST (for now, let's assume it's always POST)
-		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
-	}
-
-	$response = curl_exec($curl);
-	
-	curl_close($curl);
-	return json_decode( $response, true );
-}
-
-// Create ATProto session
-function atproto_create_session($provider, $identifier, $password) {
-
-	if (!$provider) {
-		$provider = 'https://bsky.social';
-	}
-
-	$res = fetch($provider . '/xrpc/com.atproto.server.createSession', [
-		'body' => [
-			'identifier' => $identifier,
-			'password' => $password,
-		], 
-	]);	
-
-	return $res;
-}
-
-function post_bsky_thread($text, $session, $options = []) {
-	$domain = 'https://bsky.social';
-	if (isset($options['domain']) && $options['domain']) {
-		$domain = $options['domain'];
-	}
-
-	// Split text in 300 character chunks
-	$texts = [];
-	while ($text) {
-		if (strlen($text) > 300) {
-			$length = strrpos( substr($text, 0, 300), ' ' );
-			$texts[] = substr($text, 0, $length);
-			$text = trim(substr($text, $length));
-		}
-		else {
-			$texts[] = $text;
-			$text = '';
-		}
-	}
-
-	$texts_length = count($texts);
-
-	$root = isset($options['root']) ? $options['root'] : [];
-	$parent = isset($options['parent']) ? $options['parent'] : [];
-
-	date_default_timezone_set('UTC');
-
-	// For each chunk of text ...
-	for ($i = 0; $i < $texts_length; $i++) {
-
-		// Set a timestamp
-		$ms = microtime();
-		$ms_arr1 = explode(' ', $ms);
-		$ms_arr2 = explode('.', $ms_arr1[0]);
-		$timestamp = date('Y-m-d\TH:i:s.') . $ms_arr2[1] . 'Z';
-
-		// Create a record
-		$record = [
-			'$type' => 'app.bsky.feed.post',
-			'createdAt' => $timestamp,
-			'text' => $texts[$i],
-		];
-		if (isset($option['language']) && $option['language']) {
-			$record['langs'] = [ $option['language'] ];
-		}
-
-		// Add post to thread
-		if ($i > 0 || count($root) > 0) {
-			$record['reply'] = [
-				'root' => $root,
-				'parent' => $parent,
-			];
-		}
-
-		// Post to Bluesky
-		$result2 = fetch(  $domain . '/xrpc/com.atproto.repo.createRecord', [
-			'body' => [
-				'repo' => $session['did'],
-				'collection' => 'app.bsky.feed.post',
-				'record' => $record,
-			],
-			'token' => $session['accessJwt'],
-		] );
-
-		// Set root and parent for the next posts
-		if ($i === 0 && $root == []) {
-			$root = $result2;
-		}
-		$parent = $result2;
-	}
-}
-
 // The function that is called when the bot runs
 function run_bot() {
 	global $conn;
+	global $encryption_key;
 
 	$post_length = 300;
 
 	// Get bots
-	$query = 'SELECT id, domain, identifier, password, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts';
+	$query = 'SELECT id, provider, identifier, password, iv, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -199,8 +60,9 @@ function run_bot() {
 			// Couldn't generate string shorter than 300 characters
 			continue;
 		}
-		$domain = $row['domain'] ? $row['domain'] : 'https://bsky.social';
-		$session = atproto_create_session($row['domain'], $row['identifier'], $row['password']);
+		$provider = $row['provider'] ? $row['provider'] : 'https://bsky.social';
+		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+		$session = atproto_create_session($row['provider'], $row['identifier'], $password);
 		if (isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
@@ -215,7 +77,7 @@ function run_bot() {
 
 		// Post thread
 		post_bsky_thread($text, $session, [
-			'domain' => $row['domain'],
+			'provider' => $row['provider'],
 			'language' => $row['language'],
 		]);
 	}	
@@ -223,10 +85,11 @@ function run_bot() {
 
 function check_replies() {
 	global $conn;
+	global $encryption_key;
 	$post_length = 300;
 
 	// Get all active bots
-	$query = 'SELECT id, domain, identifier, password, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
+	$query = 'SELECT id, provider, identifier, password, iv, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -248,13 +111,20 @@ function check_replies() {
 		}
 
 		// Check for new replies
-		$domain = $row['domain'] ? $row['domain'] : 'https://bsky.social';
-		$session = atproto_create_session($domain, $row['identifier'], $row['password']);
+		$provider = $row['provider'] ? $row['provider'] : 'https://bsky.social';
+
+		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+
+		$session = atproto_create_session($provider, $row['identifier'], $password);
+		if (isset($session['error'])) {
+			// Wrong bluesky username/password
+			continue;
+		}
 
 		// Get new notifications
 		$notifications = [];
 		do {
-			$notifications_result = fetch(  $domain . '/xrpc/app.bsky.notification.listNotifications', [
+			$notifications_result = fetch(  $provider . '/xrpc/app.bsky.notification.listNotifications', [
 				'method' => 'GET',
 				'querystring' => '?limit=10',
 				'token' => $session['accessJwt'],
@@ -331,7 +201,7 @@ function check_replies() {
 
 				// Post thread
 				post_bsky_thread($text, $session, [
-					'domain' => $row['domain'],
+					'provider' => $row['provider'],
 					'language' => $row['language'],
 					'parent' => $reply['parent'],
 					'root' => $reply['root'],
@@ -343,5 +213,5 @@ function check_replies() {
 	}	
 }
 
-// run_bot();
+run_bot();
 check_replies();

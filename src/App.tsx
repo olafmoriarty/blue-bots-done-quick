@@ -4,9 +4,9 @@ const App = () => {
 	return (
 		<>
 		<header>
-		<h1>Blue Bots, Done Quick!</h1>
-	</header>
-	<main className="front-page">
+			<h1>Blue Bots, Done Quick!</h1>
+		</header>
+		<main className="front-page">
 			<div className="front-page-info">
 				<p>Create your own Bluesky bot!</p>
 
