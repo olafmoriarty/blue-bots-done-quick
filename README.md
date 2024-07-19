@@ -11,6 +11,7 @@ Think you can do better? You probably can! Feel free to borrow or steal as much 
 ## To do-list
 - Add support for rich text (links and mentions), which is currently not supported
 - Anything that has to do with using Tracery to generate images
+- Add a demo, so that people can try the site without creating a Bluesky account first
 - Add an FAQ
 - Adding a Tracery tutorial would be nice ...
 
@@ -58,7 +59,7 @@ CREATE TABLE `bbdq` (
 ### Backend
 In the `backend` folder, create a file named `secrets.php`. For security reasons this file is not included in the repo, but you can use the `secrets-template.php` file as a template on how to fill it in.
 
-Set up a cron job that runs `bot.php` every five minutes, and another cron job that runs `profiler-bot.php`.
+Set up a cron job that runs `bot.php` every five minutes, and another cron job that runs `profiler-bot.php` once a day.
 
 ### Frontend
 Install dependencies using `npm install` and then build it like you normally would.
