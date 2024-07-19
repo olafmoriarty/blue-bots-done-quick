@@ -12,6 +12,11 @@ $conn = mysqli_connect(
 	$mysql_db
 );
 
+// Return empty reponse on preflight check
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+	return_json([]);
+}
+
 // Get body content - either from $_GET or from php://input
 $body = [];
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -30,7 +35,7 @@ if (!isset($body['mode']) || !$body['mode']) {
 $endpoint = $body['mode'];
 
 // List of valid endpoints
-$valid_endpoints = ['login'];
+$valid_endpoints = ['login', 'edit'];
 
 if (!in_array($endpoint, $valid_endpoints)) {
 	return_error('INVALID_ENDPOINT', '404');

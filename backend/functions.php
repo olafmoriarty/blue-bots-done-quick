@@ -144,7 +144,6 @@ function post_bsky_thread($text, $session, $options = []) {
 }
 
 function return_json($c, $options = []) {
-
 	$okOrigins = [
 		'bluebotsdonequick.com',
 		'www.bluebotsdonequick.com',
@@ -158,7 +157,6 @@ function return_json($c, $options = []) {
 		if ($url_host == 'localhost') {
 			$origin .= ':' . parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PORT);
 		}
-		header('Access-Control-Allow-Credentials: true');
 	}
 	else {
 		$origin = 'https://bluebotsdonequick.com';
@@ -169,7 +167,7 @@ function return_json($c, $options = []) {
 	header('Access-Control-Allow-Origin: ' . $origin);
 	header('Access-Control-Allow-Credentials: true');
 	header('Access-Control-Allow-Headers: Accept, Content-Type, Authorization');
-	header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+	header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
 	
 	// Set HTTP status (adapt to actual content)
 	$status = '200';
@@ -211,11 +209,14 @@ function set_http_status_header($status) {
 	];
 
 	if (isset($statuses[$status])) {
-		header("HTTP/1.0 " . $status . " " . $statuses[$status]);
+		header("HTTP/1.1 " . $status . " " . $statuses[$status]);
 	}
 }
 
 function method_check($allowed_methods) {
+	if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+		return_json([]);
+	}
 	if (!in_array($_SERVER['REQUEST_METHOD'], $allowed_methods)) {
 		return_error('METHOD_NOT_ALLOWED', '405');
 	}

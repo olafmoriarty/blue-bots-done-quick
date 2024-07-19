@@ -1,9 +1,19 @@
 <?php
-method_check(['GET', 'POST']);
+method_check(['POST']);
 parameter_check($body, ['identifier', 'password']);
 
+$provider = 'https://bsky.social';
+if (isset($body['provider'])) {
+	$provider = $body['provider'];
+}
+
+// In case a user tries typing the handle with a leading @, remove it
+if (substr($body['identifier'], 0, 1) === '@') {
+	$body['identifier'] = substr($body['identifier'], 1);
+}
+
 // Check if user exists
-$query = 'SELECT password, iv, active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource FROM bbdq WHERE identifier = ?';
+$query = 'SELECT password, iv, active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong FROM bbdq WHERE identifier = ?';
 $stmt = $conn->prepare($query);
 $stmt->bind_param('s', $body['identifier']);
 $stmt->execute();
@@ -35,7 +45,7 @@ if ($result->num_rows) {
 	}
 
 	// User authenticated, return data
-	$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
+	$data = values_to_boolean($data, ['active', 'actionIfLong']);
 	unset($data['password']);
 	unset($data['iv']);
 	$c = [
@@ -46,17 +56,17 @@ if ($result->num_rows) {
 }
 else {
 	// User is not in database, check if they exist on Bluesky
-	$provider = 'https://bsky.social';
-	if (isset($body['provider'])) {
-		$provider = $body['provider'];
-	}
-
 	$session = atproto_create_session($provider, $body['identifier'], $body['password']);
 	if (isset($session['error'])) {
 		// Couldn't authenticate user AT ALL
 		return_error('WRONG_USERNAME_OR_PASSWORD', '401');
 	}
 	else {
+		// In case user tried logging in with email or DID (even though we specifically told them to use the handle!), fix that
+		if ($body['identifier'] !== $session['handle']) {
+			$body['identifier'] = $session['handle'];
+		}
+
 		// Encrypt password
 		$iv = openssl_random_pseudo_bytes(16);
 		$iv_hex = bin2hex($iv);
@@ -79,7 +89,7 @@ else {
 			// User DOES exist! That must mean the user IS registered, but has a new handle. So we'll just update it..
 			$query = 'UPDATE bbdq SET identifier = ?, password = ?, iv = ? WHERE id = ?';
 			$stmt = $conn->prepare($query);
-			$stmt->bind_param( $session['handle'], $encrypted_password, $iv_hex, $row['id']);
+			$stmt->bind_param('sssi', $session['handle'], $encrypted_password, $iv_hex, $row['id']);
 			$stmt->execute();
 			$stmt->close();
 		}
@@ -95,7 +105,7 @@ else {
 		}
 
 		// Get return values from database
-		$query = 'SELECT active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource FROM bbdq WHERE id = ?';
+		$query = 'SELECT active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong FROM bbdq WHERE id = ?';
 		$stmt = $conn->prepare($query);
 		$stmt->bind_param('i', $id);
 		$stmt->execute();
@@ -103,7 +113,7 @@ else {
 		$stmt->close();
 
 		$data = $result->fetch_assoc();
-		$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
+		$data = values_to_boolean($data, ['active', 'actionIfLong']);
 		$c = [
 			'data' => $data
 		];
