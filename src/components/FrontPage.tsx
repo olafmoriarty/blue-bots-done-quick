@@ -1,6 +1,31 @@
+import { useEffect, useState } from "react";
 import { usePage } from "../App";
+import BotPreview from "./BotPreview";
 
 const FrontPage = () => {
+	const {backendURI} = usePage();
+	const [newBots, setNewBots] = useState([] as BotPreviewType[]);
+	const [popularBots, setPopularBots] = useState([] as BotPreviewType[]);
+
+	useEffect(() => {
+		getBots()
+			.then((res : BotPreviewType[]) => setPopularBots(res));
+		getBots('activeSince')
+			.then((res : BotPreviewType[]) => setNewBots(res));
+
+	}, []);
+
+	const getBots = async (sort? : string, limit = 10) => {
+		let queryString = '';
+		if (sort === 'activeSince') {
+			queryString += '&sort=activeSince';
+		}
+		queryString += '&count=' + limit;
+		const res = await fetch( backendURI + '?mode=list' + queryString );
+		const json = await res.json();
+		return json.data;
+	}
+
 	const {setPage} = usePage(); 
 	return (
 		<main className="front-page">
@@ -13,10 +38,27 @@ const FrontPage = () => {
 				<button onClick={() => setPage('create')}>Create a Bluesky bot</button>
 				<button onClick={() => setPage('login')}>Edit your bot</button>
 			</section>
-			<h2>Popular BBDQ bots</h2>
-			<h2>New BBDQ bots</h2>
+			{
+				popularBots.length ?
+				<>
+					<h2>Popular BBDQ bots</h2>
+					{popularBots.map(el => <BotPreview element={el} />)}
+					<h2>New BBDQ bots</h2>
+					{newBots.map(el => <BotPreview element={el} />)}
+				</>
+				:
+				null
+			}
 		</main>
 	)
+}
+
+export type BotPreviewType = {
+	name? : string,
+	identifier : string,
+	lastPostText? : string,
+	thumb? : string,
+	script? : string,
 }
 
 export default FrontPage;

@@ -41,10 +41,16 @@ function fetch( $url, $options = [] ) {
 		CURLOPT_HTTPHEADER => $headers,
 	));
 
+	if ($method === 'GET') {
+		curl_setopt($curl, CURLOPT_HTTPGET, true);
+	}
+
 	if ($method === 'POST') {
 		// If POST (for now, let's assume it's always POST)
 		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+		if (isset($data)) {
+			curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+		}
 	}
 
 	$response = curl_exec($curl);
@@ -214,9 +220,6 @@ function set_http_status_header($status) {
 }
 
 function method_check($allowed_methods) {
-	if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-		return_json([]);
-	}
 	if (!in_array($_SERVER['REQUEST_METHOD'], $allowed_methods)) {
 		return_error('METHOD_NOT_ALLOWED', '405');
 	}

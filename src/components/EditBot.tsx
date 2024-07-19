@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import tracery from 'tracery-grammar';
 import { usePage } from '../App';
+import ErrorMessage from './ErrorMessage';
+import DeleteBot from './DeleteBot';
+import languages from '../data/languages.json';
 
 function EditBot() {
 
@@ -17,10 +20,9 @@ const defaultCode = `{
     "location": ["World", "Earth", "Jupiter", "Odalen", "galaxy", "Gallifrey", "Sesame Street"]
 }`;
 
-	const {botSettings, loginDetails, backendURI} = usePage();
+	const {botSettings, loginDetails, backendURI, logOut} = usePage();
 
 	const [grammar, setGrammar] = useState( null as ReturnType<typeof tracery.createGrammar> | null );
-
 	const [script, setScript] = useState(botSettings?.script || defaultCode);
 	const [parsingError, setParsingError] = useState(false);
 	const [origin, setOrigin] = useState(botSettings?.msg || 'origin');
@@ -29,6 +31,12 @@ const defaultCode = `{
 	const [active, setActive] = useState(botSettings?.active);
 	const [language, setLanguage] = useState(botSettings?.language || "en");
 	const [actionIfLong, setActionIfLong] = useState(botSettings?.actionIfLong || false);
+	const [showSource, setShowSource] = useState(botSettings?.showSource || false);
+
+	const [error, setError] = useState('');
+	const [isFetching, setIsFetching] = useState(false);
+
+	const [showDeleteForm, setShowDeleteForm] = useState(false);
 
 	useEffect(() => {
 		if (!grammar) {
@@ -59,6 +67,9 @@ const defaultCode = `{
 	}
 
 	const updateBot = async (activate : boolean) => {
+		setError('');
+		setIsFetching(true);
+
 		if (activate) {
 			setActive(true);
 		}
@@ -78,7 +89,7 @@ const defaultCode = `{
 			minutesBetweenPosts: minutesBetweenPosts,
 			language: language,
 			actionIfLong: actionIfLong,
-
+			showSource: showSource,
 		});
 		const res = await fetch( backendURI, {
 			method: 'PATCH',
@@ -89,7 +100,10 @@ const defaultCode = `{
 			}
 		});
 		const json = await res.json();
-		console.log(json);
+		if (!json.status) {
+			setError(json.error);
+		}
+		setIsFetching(false);
 	}
 
 	return (
@@ -119,7 +133,6 @@ const defaultCode = `{
 					<p className="floff">{grammar?.flatten(`#${reply}#`)}</p>
 					<p className="floff">{grammar?.flatten(`#${reply}#`)}</p>
 				</section>
-			</>}
 
 			<section className="settings">
 				<h3>Posting frequency</h3>
@@ -136,7 +149,7 @@ const defaultCode = `{
 				</select>
 				<h3>Post language</h3>
 				<select value={language} onChange={(ev) => setLanguage(ev.target.value)}>
-					<option value="en">English</option>
+					{languages.sort((a, b) => a.name < b.name ? -1 : 1).map(el => <option value={el.code} key={el.code}>{el.name}</option>)}
 				</select>
 				<h3>If a generated post is more than 300 characters long...</h3>
 				<p><label><input 
@@ -153,10 +166,18 @@ const defaultCode = `{
 					checked={actionIfLong}
 					onChange={() => setActionIfLong(true)}
 				/> Split text into chunks and post as a thread</label></p>
+				<h3>Share your code?</h3>
+				<p><label><input type="checkbox" checked={showSource} onChange={() => setShowSource(old => !old)}  /> Allow other users to read the source code of my bot</label></p>
 			</section>
-			<button type="button" onClick={() => updateBot(true)}>{active ? "Update bot" : "Save settings and activate bot"}</button>
-			<button className="less-attractive-button" type="button" onClick={() => updateBot(false)}>{active ? "Temporarily deactivate bot" : "Save settings, don't activate yet"}</button>
-			<button className="big-red-button" type="button">Delete bot</button>
+			<ErrorMessage error={error} />
+			{isFetching ? <p className="updating">Updating bot ...</p> : <section className="buttons">
+				<button type="button" onClick={() => updateBot(true)}>{active ? "Update bot" : "Save settings and activate bot"}</button>
+				<button className="less-attractive-button" type="button" onClick={() => updateBot(false)}>{active ? "Temporarily deactivate bot" : "Save as draft, don't activate bot yet"}</button>
+				{showDeleteForm ? null : <button className="big-red-button" type="button" onClick={() => setShowDeleteForm(true)}>Delete bot</button>}
+			</section>}
+			{showDeleteForm ? <DeleteBot /> : null}
+			</>}
+			<p className="back"><button onClick={() => logOut()}>Log out</button></p>
 		</main>
   )
 }

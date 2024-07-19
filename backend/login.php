@@ -3,8 +3,12 @@ method_check(['POST']);
 parameter_check($body, ['identifier', 'password']);
 
 $provider = 'https://bsky.social';
-if (isset($body['provider'])) {
+if (isset($body['provider']) && $body['provider']) {
 	$provider = $body['provider'];
+}
+
+if (strpos($provider, '://') === false) {
+	return_error('PROVIDER_PROTOCOL_MISSING');
 }
 
 // In case a user tries typing the handle with a leading @, remove it
@@ -13,9 +17,9 @@ if (substr($body['identifier'], 0, 1) === '@') {
 }
 
 // Check if user exists
-$query = 'SELECT password, iv, active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong FROM bbdq WHERE identifier = ?';
+$query = 'SELECT password, iv, active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource FROM bbdq WHERE identifier = ? AND provider = ?';
 $stmt = $conn->prepare($query);
-$stmt->bind_param('s', $body['identifier']);
+$stmt->bind_param('ss', $body['identifier'], $provider);
 $stmt->execute();
 $result = $stmt->get_result();
 $stmt->close();
@@ -37,15 +41,15 @@ if ($result->num_rows) {
 		$iv_hex = bin2hex($iv);
 		$encrypted_password = openssl_encrypt( $body['password'], 'aes-256-cbc', $encryption_key, 0, $iv );
 
-		$query = 'UPDATE bbdq SET password = ?, iv = ? WHERE identifier = ?';
+		$query = 'UPDATE bbdq SET password = ?, iv = ? WHERE identifier = ? AND provider = ?';
 		$stmt = $conn->prepare($query);
-		$stmt->bind_param('sss', $encrypted_password, $iv_hex, $body['identifier']);
+		$stmt->bind_param('ssss', $encrypted_password, $iv_hex, $body['identifier'], $provider);
 		$stmt->execute();
 		$stmt->close();
 	}
 
 	// User authenticated, return data
-	$data = values_to_boolean($data, ['active', 'actionIfLong']);
+	$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
 	unset($data['password']);
 	unset($data['iv']);
 	$c = [
@@ -105,7 +109,7 @@ else {
 		}
 
 		// Get return values from database
-		$query = 'SELECT active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong FROM bbdq WHERE id = ?';
+		$query = 'SELECT active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource FROM bbdq WHERE id = ?';
 		$stmt = $conn->prepare($query);
 		$stmt->bind_param('i', $id);
 		$stmt->execute();
@@ -113,7 +117,7 @@ else {
 		$stmt->close();
 
 		$data = $result->fetch_assoc();
-		$data = values_to_boolean($data, ['active', 'actionIfLong']);
+		$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
 		$c = [
 			'data' => $data
 		];

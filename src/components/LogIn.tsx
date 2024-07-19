@@ -3,12 +3,20 @@ import { usePage } from "../App"
 import ErrorMessage from "./ErrorMessage";
 
 const LogIn = () => {
-	const {error, loginDetails, setPage, attemptLogin} = usePage();
+	const {error, loginDetails, setPage, attemptLogin, isWorking} = usePage();
 
 	const [providerFieldActive, setProviderFieldActive] = useState(false);
 	const [provider, setProvider] = useState(loginDetails ? loginDetails.provider : 'https://bsky.social');
 	const [identifier, setIdentifier] = useState(loginDetails ? loginDetails.identifier : '');
 	const [password, setPassword] = useState(loginDetails ? loginDetails.password : '');
+
+	if (isWorking) {
+		return (
+		<main>
+			<p className="updating">Logging in...</p>
+		</main>
+		)
+	}
 
 	return (
 		<main>

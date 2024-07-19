@@ -2,7 +2,7 @@ import { useState } from "react";
 import { usePage } from "../App";
 
 const CreateBot = () => {
-	const {setPage, attemptLogin} = usePage(); 
+	const {setPage, attemptLogin, isWorking} = usePage(); 
 	const [step, setStep] = useState(0);
 	const [providerFieldActive, setProviderFieldActive] = useState(false);
 	const [provider, setProvider] = useState('https://bsky.social');
@@ -52,6 +52,16 @@ const CreateBot = () => {
 			<p><em>Your app password will be stored in a database on the BBDQ server along with the Bluesky handle in an encrypted format.</em></p>	
 		</>
 	];
+
+	if (isWorking) {
+		return (
+		<main>
+			<p className="updating">Logging in...</p>
+		</main>
+		)
+	}
+
+
 	return (
 		<main>
 			<div className="create-bot">

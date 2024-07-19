@@ -4,19 +4,20 @@ import FrontPage from './components/FrontPage';
 import CreateBot from './components/CreateBot';
 import EditBot from './components/EditBot';
 import LogIn from './components/LogIn';
+import Privacy from './components/Privacy';
 
 const PageContext = createContext( {} as ContextType );
 
 export const usePage = () => useContext(PageContext);
 
 const App = () => {
-//	const backendURI = 'https://bluebotsdonequick.com/backend/';
-	const backendURI = 'http://localhost/tracery/';
+	const backendURI = 'https://bluebotsdonequick.com/backend/';
 
 	const [page, setPage] = useState('');
 	const [loginDetails, setLoginDetails] = useState(undefined as LoginInformation|undefined);
 	const [error, setError] = useState('');
 	const [botSettings, setBotSettings] = useState(undefined as BotSettingsFromAPI|undefined);
+	const [isWorking, setIsWorking] = useState(false);
 
 	let pageToDisplay;
 	if (botSettings !== undefined) {
@@ -30,6 +31,9 @@ const App = () => {
 			case 'login':
 				pageToDisplay = <LogIn />;
 				break; 
+			case 'privacy':
+				pageToDisplay = <Privacy />
+				break;
 			default:
 				pageToDisplay = <FrontPage />;
 				break;
@@ -38,6 +42,7 @@ const App = () => {
 	}
 
 	const attemptLogin = async (provider : string, identifier : string, password : string) => {
+		setIsWorking(true);
 		setLoginDetails({ provider: provider, identifier: identifier, password: password });
 		setError('');
 		const body = JSON.stringify({
@@ -70,6 +75,13 @@ const App = () => {
 				});
 			}
 		}
+		setIsWorking(false);
+	}
+
+	const logOut = () => {
+		setLoginDetails(undefined);
+		setBotSettings(undefined);
+		setPage('');
 	}
 
 	const context = {
@@ -79,6 +91,8 @@ const App = () => {
 		loginDetails: loginDetails,
 		error: error,
 		backendURI: backendURI,
+		isWorking: isWorking,
+		logOut: logOut,
 	}
 
 	return (
@@ -87,6 +101,9 @@ const App = () => {
 			<h1>Blue Bots, Done Quick!</h1>
 		</header>
 		{pageToDisplay}
+		<footer>
+			<p className="back">{page === 'privacy' ? <button onClick={() => setPage('')}>Back</button> : <button onClick={() => setPage('privacy')}>Privacy et cetera</button>}</p>
+		</footer>
 		</PageContext.Provider>
 	)
 }
@@ -98,6 +115,8 @@ type ContextType = {
 	loginDetails : LoginInformation|undefined,
 	error : string,
 	backendURI : string,
+	isWorking : boolean,
+	logOut : () => void,
 };
 
 type LoginInformation = {
@@ -116,6 +135,7 @@ export type BotSettingsFromAPI = {
 	msg : string|null,
 	reply : string|null,
 	actionIfLong : boolean,
+	showSource : boolean,
 }
 
 export default App;

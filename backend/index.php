@@ -35,7 +35,7 @@ if (!isset($body['mode']) || !$body['mode']) {
 $endpoint = $body['mode'];
 
 // List of valid endpoints
-$valid_endpoints = ['login', 'edit'];
+$valid_endpoints = ['login', 'edit', 'delete', 'list'];
 
 if (!in_array($endpoint, $valid_endpoints)) {
 	return_error('INVALID_ENDPOINT', '404');

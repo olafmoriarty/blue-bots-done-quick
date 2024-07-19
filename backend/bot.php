@@ -26,7 +26,7 @@ function run_bot() {
 	$post_length = 300;
 
 	// Get bots
-	$query = 'SELECT id, provider, identifier, password, iv, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts';
+	$query = 'SELECT id, provider, identifier, did, password, iv, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -62,7 +62,7 @@ function run_bot() {
 		}
 		$provider = $row['provider'] ? $row['provider'] : 'https://bsky.social';
 		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-		$session = atproto_create_session($row['provider'], $row['identifier'], $password);
+		$session = atproto_create_session($row['provider'], $row['did'], $password);
 		if (isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
@@ -89,7 +89,7 @@ function check_replies() {
 	$post_length = 300;
 
 	// Get all active bots
-	$query = 'SELECT id, provider, identifier, password, iv, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
+	$query = 'SELECT id, provider, did, identifier, password, iv, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -115,7 +115,7 @@ function check_replies() {
 
 		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
 
-		$session = atproto_create_session($provider, $row['identifier'], $password);
+		$session = atproto_create_session($provider, $row['did'], $password);
 		if (isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
@@ -126,7 +126,7 @@ function check_replies() {
 		do {
 			$notifications_result = fetch(  $provider . '/xrpc/app.bsky.notification.listNotifications', [
 				'method' => 'GET',
-				'querystring' => '?limit=10',
+				'query' => '?limit=10',
 				'token' => $session['accessJwt'],
 			] );
 			$notifications = array_merge($notifications, $notifications_result['notifications']);
