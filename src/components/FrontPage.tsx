@@ -38,6 +38,7 @@ const FrontPage = () => {
 				<button onClick={() => setPage('create')}>Create a Bluesky bot</button>
 				<button onClick={() => setPage('login')}>Edit your bot</button>
 			</section>
+			<p className="back"><button onClick={() => setPage('demo')}>View a demo</button></p>
 			{
 				popularBots.length ?
 				<>

@@ -11,7 +11,7 @@ Think you can do better? You probably can! Feel free to borrow or steal as much 
 ## To do-list
 - Add support for rich text (links and mentions), which is currently not supported
 - Anything that has to do with using Tracery to generate images
-- Add a demo, so that people can try the site without creating a Bluesky account first
+- Allow users to turn off automatic replies
 - Add an FAQ
 - Adding a Tracery tutorial would be nice ...
 

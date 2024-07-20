@@ -63,10 +63,13 @@ const defaultCode = `{
 	}
 
 	if (!loginDetails || !botSettings) {
-		return;
+//		return;
 	}
 
 	const updateBot = async (activate : boolean) => {
+		if (!loginDetails) {
+			return;
+		}
 		setError('');
 		setIsFetching(true);
 
@@ -108,7 +111,8 @@ const defaultCode = `{
 
 	return (
 		<main className="main-content">
-			<h2>Settings for {botSettings?.identifier || loginDetails.identifier}</h2>
+			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <button className="link" onClick={() => logOut()}>click here</button>.</p>}
+			<h2>Settings for {botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"}</h2>
 			<section className="tracery-input">
 				<h3>Your bot's Tracery code</h3>
 				<textarea value={script} onChange={(ev) => updateScript(ev.target.value)} />
@@ -173,7 +177,11 @@ const defaultCode = `{
 			{isFetching ? <p className="updating">Updating bot ...</p> : <section className="buttons">
 				<button type="button" onClick={() => updateBot(true)}>{active ? "Update bot" : "Save settings and activate bot"}</button>
 				<button className="less-attractive-button" type="button" onClick={() => updateBot(false)}>{active ? "Temporarily deactivate bot" : "Save as draft, don't activate bot yet"}</button>
-				{showDeleteForm ? null : <button className="big-red-button" type="button" onClick={() => setShowDeleteForm(true)}>Delete bot</button>}
+				{showDeleteForm ? null : <button className="big-red-button" type="button" onClick={() => {
+				if (loginDetails) {
+					setShowDeleteForm(true)
+				}
+				}}>Delete bot</button>}
 			</section>}
 			{showDeleteForm ? <DeleteBot /> : null}
 			</>}

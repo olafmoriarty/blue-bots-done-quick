@@ -79,6 +79,10 @@ p {
 	margin-bottom: 0;
 }
 
+.front-page .buttons {
+	margin-bottom: 1rem;
+}
+
 .front-page .buttons button {
 	font: inherit;
 	padding: .5rem;

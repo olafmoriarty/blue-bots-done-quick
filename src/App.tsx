@@ -34,6 +34,9 @@ const App = () => {
 			case 'privacy':
 				pageToDisplay = <Privacy />
 				break;
+			case 'demo':
+				pageToDisplay = <EditBot />
+				break;
 			default:
 				pageToDisplay = <FrontPage />;
 				break;
