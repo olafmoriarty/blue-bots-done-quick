@@ -2,12 +2,12 @@
 method_check(['GET']);
 
 $sorting_criteria = 'followers DESC';
-if (isset($mode['sort']) && $mode['sort'] == 'activeSince') {
+if (isset($body['sort']) && $body['sort'] == 'activeSince') {
 	$sorting_criteria = 'activeSince DESC';
 }
 $count = 10;
-if (isset($mode['count']) && is_numeric($mode['count'])) {
-	$count = $mode['count'];
+if (isset($body['count']) && is_numeric($body['count'])) {
+	$count = $body['count'];
 }
 $count = floor($count);
 if ($count < 1) {
