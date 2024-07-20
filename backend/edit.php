@@ -84,7 +84,7 @@ foreach ($possible_fields as $field) {
 if (count($fields_to_update)) {
 	$query = 'UPDATE bbdq SET ' . implode(' = ?, ', $fields_to_update) . ' = ?';
 	if (isset($body['active']) && $body['active'] && !$row['activeSince']) {
-		$query .= ', activeSince = NOW()';
+		$query .= ', activeSince = NOW(), lastNotification = REPLACE(NOW(), " ", "T")';
 	}
 	$query .= ' WHERE identifier = ? AND provider = ?';
 	$bind_param_string .= 'ss';
