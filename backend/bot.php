@@ -60,9 +60,9 @@ function run_bot() {
 			// Couldn't generate string shorter than 300 characters
 			continue;
 		}
-		$provider = $row['provider'] ? $row['provider'] : 'https://bsky.social';
+		$provider = $row['provider'] ?: 'https://bsky.social';
 		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-		$session = atproto_create_session($row['provider'], $row['did'], $password);
+		$session = atproto_create_session($provider, $row['did'], $password);
 		if (isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
@@ -77,7 +77,7 @@ function run_bot() {
 
 		// Post thread
 		post_bsky_thread($text, $session, [
-			'provider' => $row['provider'],
+			'provider' => $provider,
 			'language' => $row['language'],
 		]);
 	}	
@@ -111,7 +111,7 @@ function check_replies() {
 		}
 
 		// Check for new replies
-		$provider = $row['provider'] ? $row['provider'] : 'https://bsky.social';
+		$provider = $row['provider'] ?: 'https://bsky.social';
 
 		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
 
@@ -201,7 +201,7 @@ function check_replies() {
 
 				// Post thread
 				post_bsky_thread($text, $session, [
-					'provider' => $row['provider'],
+					'provider' => $provider,
 					'language' => $row['language'],
 					'parent' => $reply['parent'],
 					'root' => $reply['root'],
