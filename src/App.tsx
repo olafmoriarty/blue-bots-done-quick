@@ -54,31 +54,40 @@ const App = () => {
 			identifier: identifier,
 			password: password,
 		})
-		const res = await fetch(backendURI, {
-			method: 'POST',
-			body: body,
-		});
-		const json = await res.json();
-		if (!json.status) {
-			setError(json.error);
+		try {
+			const res = await fetch(backendURI, {
+				method: 'POST',
+				body: body,
+			});
+			const json = await res.json();
+			if (!json.status) {
+				setError(json.error);
+				setIsWorking(false);
+				setPage('login');
+				return;
+			}
+			if (json.status && json.data) {
+				setBotSettings(json.data);
+				if (json.data.identifier !== identifier) {
+					setLoginDetails(details => {
+						if (!details) {
+							return undefined;
+						}
+						return {
+							...details,
+							identifier: json.data.identifier,
+						}
+					});
+				}
+			}
+			setIsWorking(false);
+		}
+		catch {
+			setError('SERVER_ERROR');
+			setIsWorking(false);
 			setPage('login');
 			return;
 		}
-		if (json.status && json.data) {
-			setBotSettings(json.data);
-			if (json.data.identifier !== identifier) {
-				setLoginDetails(details => {
-					if (!details) {
-						return undefined;
-					}
-					return {
-						...details,
-						identifier: json.data.identifier,
-					}
-				});
-			}
-		}
-		setIsWorking(false);
 	}
 
 	const logOut = () => {

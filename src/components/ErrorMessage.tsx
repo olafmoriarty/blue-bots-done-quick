@@ -7,6 +7,7 @@ const ErrorMessage = (props : {error : string, additionalInfo?: string[]}) => {
 		"NO_ENDPOINT_SELECTED": "Huh, that's strange. The API returned an error message saying that the request is missing an endpoint. I have no idea how that happened, that shouldn't be possible! I guess you could... try again? And if that doesn't work, send me an e-mail or report an issue on the GitHub repo?",
 		"ORIGIN_RULE_MISSING": "The main Tracery rule you have specified does not exist in your grammar.",
 		"PARAMETERS_MISSING": "Required information missing: ",
+		"SERVER_ERROR": "An error occured when trying to connect to the server.",
 		"REPLY_RULE_MISSING": "The reply Tracery rule you have specified does not exist in your grammar.",
 		"PROVIDER_PROTOCOL_MISSING": "The provider URL must contain a scheme, such as \"https://\".",
 		"WRONG_USERNAME_OR_PASSWORD": "The was a problem logging in. Did you type the correct username and password?"
