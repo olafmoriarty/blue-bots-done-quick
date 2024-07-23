@@ -66,23 +66,16 @@ function atproto_create_session($provider, $identifier, $password) {
 		$provider = 'https://bsky.social';
 	}
 
-	$res = fetch($provider . '/xrpc/com.atproto.server.createSession', [
+	return fetch( $provider . '/xrpc/com.atproto.server.createSession', [
 		'body' => [
 			'identifier' => $identifier,
 			'password' => $password,
-		], 
-	]);	
-
-	return $res;
+		],
+	]);
 }
 
 // Post thread to bluesky
 function post_bsky_thread($text, $session, $options = []) {
-	$provider = 'https://bsky.social';
-	if (isset($options['provider']) && $options['provider']) {
-		$provider = $options['provider'];
-	}
-
 	// Split text in 300 character chunks
 	$texts = [];
 	while ($text) {
@@ -99,14 +92,13 @@ function post_bsky_thread($text, $session, $options = []) {
 
 	$texts_length = count($texts);
 
-	$root = isset($options['root']) ? $options['root'] : [];
-	$parent = isset($options['parent']) ? $options['parent'] : [];
+	$root = $options['root'] ?? [];
+	$parent = $options['parent'] ?? [];
 
 	date_default_timezone_set('UTC');
 
 	// For each chunk of text ...
 	for ($i = 0; $i < $texts_length; $i++) {
-
 		// Set a timestamp
 		$ms = microtime();
 		$ms_arr1 = explode(' ', $ms);
@@ -132,6 +124,7 @@ function post_bsky_thread($text, $session, $options = []) {
 		}
 
 		// Post to Bluesky
+		$provider = $options['provider'] ?? 'https://bsky.social';
 		$result2 = fetch(  $provider . '/xrpc/com.atproto.repo.createRecord', [
 			'body' => [
 				'repo' => $session['did'],

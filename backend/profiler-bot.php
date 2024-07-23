@@ -19,7 +19,7 @@ function get_profiles() {
 	global $conn, $bbdq_bluesky_handle, $bbdq_bluesky_password;
 
 	// Get all identifiers
-	$query = 'SELECT did FROM bbdq WHERE provider = "https://bsky.social"';
+	$query = 'SELECT did FROM bbdq';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
