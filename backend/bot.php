@@ -123,10 +123,17 @@ function check_replies() {
 
 		// Get new notifications
 		$notifications = [];
+		$cursor = '';
 		do {
+
+			$queryString = '?limit=10';
+			if ($cursor) {
+				$queryString .= '&cursor=' . $cursor;
+			}
+		
 			$notifications_result = fetch(  $provider . '/xrpc/app.bsky.notification.listNotifications', [
 				'method' => 'GET',
-				'query' => '?limit=10',
+				'query' => $queryString,
 				'token' => $session['accessJwt'],
 			] );
 			$notifications = array_merge($notifications, $notifications_result['notifications']);
