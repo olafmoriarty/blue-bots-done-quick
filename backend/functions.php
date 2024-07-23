@@ -78,9 +78,9 @@ function atproto_create_session($provider, $identifier, $password) {
 
 // Post thread to bluesky
 function post_bsky_thread($text, $session, $options = []) {
-	$domain = 'https://bsky.social';
-	if (isset($options['domain']) && $options['domain']) {
-		$domain = $options['domain'];
+	$provider = 'https://bsky.social';
+	if (isset($options['provider']) && $options['provider']) {
+		$provider = $options['provider'];
 	}
 
 	// Split text in 300 character chunks
@@ -132,7 +132,7 @@ function post_bsky_thread($text, $session, $options = []) {
 		}
 
 		// Post to Bluesky
-		$result2 = fetch(  $domain . '/xrpc/com.atproto.repo.createRecord', [
+		$result2 = fetch(  $provider . '/xrpc/com.atproto.repo.createRecord', [
 			'body' => [
 				'repo' => $session['did'],
 				'collection' => 'app.bsky.feed.post',
