@@ -1,4 +1,9 @@
 <?php
+
+// THIS FILE IS BASED ON THE TRACERY NODE.JS LIBRARY FOUND HERE:
+// https://github.com/v21/tracery/blob/master/tracery.js
+// Rudimentarily translated from JavaScript to PHP by me.
+
 class Grammar {
 	public $modifiers;
 	public $raw;
