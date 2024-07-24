@@ -15,11 +15,13 @@ $conn = mysqli_connect(
 );
 
 // The function that is called when the bot runs
+// (Profiles on other servers than bsky.social can't be batch fetched using
+// $bbdq_bluesky_handle, so it was easiest to put that in its own function)
 function get_profiles() {
 	global $conn, $bbdq_bluesky_handle, $bbdq_bluesky_password;
 
-	// Get all identifiers
-	$query = 'SELECT did FROM bbdq WHERE provider = "https://bsky.social"';
+	// Get all identifiers from bsky.social
+	$query = 'SELECT did FROM bbdq WHERE provider = "https://bsky.social" OR provider = ""';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -41,7 +43,7 @@ function get_profiles() {
 	for ($i = 0; $i < $actor_count; $i = $i + 25) {
 		$actors_slice = array_slice($actors, $i, 25);
 		$query_string = '?actors=' . implode('&actors=', $actors_slice);
-		$res = fetch('https://public.api.bsky.app/xrpc/app.bsky.actor.getProfiles', [
+		$res = fetch('https://bsky.social/xrpc/app.bsky.actor.getProfiles', [
 			'method' => 'GET',
 			'query' => $query_string,
 			'token' => $session['accessJwt'],
@@ -56,10 +58,44 @@ function get_profiles() {
 			$stmt->execute();
 			$stmt->close();
 		}
-
-		print_r($res);
 	}
+}
 
+function get_external_profiles() {
+	global $conn;
+	global $encryption_key;
+
+	// Get all identifiers from bsky.social
+	$query = 'SELECT provider, password, iv, did FROM bbdq WHERE provider != "" AND provider != "https://bsky.social"';
+	$stmt = $conn->prepare($query);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+
+	while ($row = $result->fetch_assoc()) {
+		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+		$session = atproto_create_session($row['provider'], $row['did'], $password);
+		if (isset($session['error'])) {
+			// Wrong bluesky username/password
+			continue;
+		}
+
+		$query_string = '?actor=' . $row['did'];
+		$profile = fetch($row['provider'] . '/xrpc/app.bsky.actor.getProfile', [
+			'method' => 'GET',
+			'query' => $query_string,
+			'token' => $session['accessJwt'],
+		]);
+
+		$avatar = isset($profile['avatar']) ? $profile['avatar'] : '';
+		$displayName = isset($profile['displayName']) ? $profile['displayName'] : '';
+		$query = 'UPDATE bbdq SET name = ?, thumb = ?, followers = ? WHERE did = ?';
+		$stmt = $conn->prepare($query);
+		$stmt->bind_param('ssis', $displayName, $avatar, $profile['followersCount'], $profile['did']);
+		$stmt->execute();
+		$stmt->close();
+	}
 }
 
 get_profiles();
+get_external_profiles();

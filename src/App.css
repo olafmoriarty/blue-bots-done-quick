@@ -88,6 +88,7 @@ p {
 	padding: .5rem;
 	border-radius: .5rem;
 }
+
 @media screen and (min-width: 800px) {
 	.front-page .buttons {
 		display: grid;
@@ -100,6 +101,10 @@ p {
 		gap: 1rem;
 	}
 	
+}
+
+.front-page h2 {
+	margin-top: 3rem;
 }
 
 a {
@@ -311,6 +316,29 @@ main .proceed button {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
+}
+
+@media screen and (max-width: 800px) {
+	.person {
+		flex-direction: column;
+		justify-content: center;
+		text-align: center;
+	}
+	.person .avatar {
+		width: initial;
+	}
+	.person .avatar img {
+		margin: 0 auto;
+		width: 5rem;
+		height: 5rem;
+	}
+	.follow-button {
+		display: block;
+		margin: 0;
+	}
+	.follow-button button {
+		margin-top: 0;
+	}
 }
 
 .source-code {

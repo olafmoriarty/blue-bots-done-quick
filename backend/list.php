@@ -18,7 +18,7 @@ if ($count > 100) {
 }
 
 
-$query = 'SELECT name, identifier, lastPostText, thumb, script, showSource FROM bbdq WHERE active = 1 AND provider = "https://bsky.social" ORDER BY ' . $sorting_criteria . ' LIMIT ' . $count;
+$query = 'SELECT name, did, identifier, lastPostText, thumb, script, showSource FROM bbdq WHERE active = 1 ORDER BY ' . $sorting_criteria . ' LIMIT ' . $count;
 $stmt = $conn->prepare($query);
 $stmt->execute();
 $result = $stmt->get_result();

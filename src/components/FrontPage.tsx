@@ -44,8 +44,10 @@ const FrontPage = () => {
 				<>
 					<h2>Popular BBDQ bots</h2>
 					{popularBots.map(el => <BotPreview element={el} />)}
+					<p><em>(Follower counts are updated once an hour.)</em></p>
 					<h2>New BBDQ bots</h2>
 					{newBots.map(el => <BotPreview element={el} />)}
+					<p><em>(Display names and avatars are retrieved/updated once an hour.)</em></p>
 				</>
 				:
 				null
@@ -56,6 +58,7 @@ const FrontPage = () => {
 
 export type BotPreviewType = {
 	name? : string,
+	did : string,
 	identifier : string,
 	lastPostText? : string,
 	thumb? : string,
