@@ -2,6 +2,7 @@
 // This script is called automatically by a cron job every five minutes
 
 // Get MySQL and Bluesky login details
+global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
 include('secrets.php');
 
 // Get fetch function

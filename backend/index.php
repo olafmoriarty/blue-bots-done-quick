@@ -1,6 +1,7 @@
 <?php
 
 // Get MySQL and Bluesky login details
+global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
 include 'secrets.php';
 include 'functions.php';
 

@@ -1,4 +1,5 @@
 <?php
+global $conn;
 method_check(['GET']);
 
 $sorting_criteria = 'followers DESC';

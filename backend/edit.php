@@ -1,18 +1,16 @@
 <?php
+global $body, $conn, $encryption_key;
 method_check(['PATCH']);
 parameter_check($body, ['identifier', 'password']);
 
 // Check provider, identifier and password
-$provider = 'https://bsky.social';
-if (isset($body['provider']) && $body['provider']) {
-	$provider = $body['provider'];
-}
+$provider = $body['provider'] ?? 'https://bsky.social';
 
-if (strpos($provider, '://') === false) {
+if (!str_contains($provider, '://')) {
 	return_error('PROVIDER_PROTOCOL_MISSING');
 }
 
-if (substr($body['identifier'], 0, 1) === '@') {
+if (str_starts_with($body['identifier'], '@')) {
 	$body['identifier'] = substr($body['identifier'], 1);
 }
 
@@ -39,20 +37,20 @@ if ($password !== $body['password']) {
 
 // Start processing information that should be updated in the database
 // Check if the tracery code appears to be valid
-$script = isset($body['script']) ? $body['script'] : $row['script'];
+$script = $body['script'] ?? $row['script'];
 $script = json_decode($script, true);
 if (!$script || !is_array($script)) {
 	return_error('INVALID_JSON');
 }
 
 // Check if the selected rules for post and reply actually exist
-$rule = isset($body['msg']) ? $body['msg'] : $row['msg'];
+$rule = $body['msg'] ?? $row['msg'];
 if (!$rule || !isset($script[$rule])) {
 	return_error('ORIGIN_RULE_MISSING');
 }
 
 // Check if the selected rules for post and reply actually exist
-$rule = isset($body['reply']) ? $body['reply'] : $row['reply'];
+$rule = $body['reply'] ?? $row['reply'];
 if (!$rule || !isset($script[$rule])) {
 	return_error('REPLY_RULE_MISSING');
 }
