@@ -13,7 +13,7 @@ $conn = mysqli_connect(
 	$mysql_db
 );
 
-// Return empty reponse on preflight check
+// Return empty response on preflight check
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 	return_json([]);
 }

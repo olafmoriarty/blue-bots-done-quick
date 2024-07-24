@@ -4,7 +4,7 @@ method_check(['PATCH']);
 parameter_check($body, ['identifier', 'password']);
 
 // Check provider, identifier and password
-$provider = $body['provider'] ?? 'https://bsky.social';
+$provider = empty($body['provider']) ? 'https://bsky.social' : $body['provider'];
 
 if (!str_contains($provider, '://')) {
 	return_error('PROVIDER_PROTOCOL_MISSING');
