@@ -1,18 +1,16 @@
 <?php
+global $body, $conn, $encryption_key;
 method_check(['DELETE']);
 parameter_check($body, ['identifier', 'password']);
 
 // Check provider, identifier and password
-$provider = 'https://bsky.social';
-if (isset($body['provider']) && $body['provider']) {
-	$provider = $body['provider'];
-}
+$provider = empty($body['provider']) ? 'https://bsky.social' : $body['provider'];
 
-if (strpos($provider, '://') === false) {
+if (!str_contains($provider, '://')) {
 	return_error('PROVIDER_PROTOCOL_MISSING');
 }
 
-if (substr($body['identifier'], 0, 1) === '@') {
+if (str_starts_with($body['identifier'], '@')) {
 	$body['identifier'] = substr($body['identifier'], 1);
 }
 

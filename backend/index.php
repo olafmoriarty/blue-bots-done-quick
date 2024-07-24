@@ -1,6 +1,7 @@
 <?php
 
 // Get MySQL and Bluesky login details
+global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
 include 'secrets.php';
 include 'functions.php';
 
@@ -12,7 +13,7 @@ $conn = mysqli_connect(
 	$mysql_db
 );
 
-// Return empty reponse on preflight check
+// Return empty response on preflight check
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 	return_json([]);
 }

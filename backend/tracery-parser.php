@@ -13,9 +13,11 @@ class Grammar {
 	public $grammar;
 	public $depth;
 	public $distribution;
+	public $errors;
 
 	function __construct( $raw ) {
-		$modifiers = [];
+		$this->modifiers = [];
+		$this->errors = [];
 		$this->loadFromRawObj( $raw );
 
 	}
@@ -50,19 +52,15 @@ class Grammar {
 
     public function createRoot($rule) {
         // Create a node and subnodes
-        $root = new TraceryNode($this, 0, [
-            'type' => -1,
-            'raw' => $rule,
-        ]);
-
-        return $root;
+	    return new TraceryNode($this, 0, [
+	        'type' => -1,
+	        'raw' => $rule,
+	    ]);
     }
 
     public function selectRule($key, $node, $errors) {
         if ($this->symbols[$key]) {
-            $rule = $this->symbols[$key]->selectRule($node, $errors);
-
-            return $rule;
+	        return $this->symbols[$key]->selectRule($node, $errors);
         }
 
         // Failover to alternative subgrammars
@@ -73,16 +71,16 @@ class Grammar {
         }
 
         // No symbol?
-        $this->errors[] = "No symbol for '" + $key + "'";
-        return "((" + $key + "))";
+        $this->errors[] = "No symbol for '" . $key . "'";
+        return "((" . $key . "))";
     }
 
     function addModifiers($mods) {
 
         // copy over the base modifiers
         foreach ($mods as $key => $value) {
-            if (isset($mods[$key])) {
-                $this->modifiers[$key] = $mods[$key];
+            if (isset($value)) {
+                $this->modifiers[$key] = $value;
             }
         };
     }
@@ -130,6 +128,8 @@ class Symbol {
 	public $baseRules;
 	public $stack;
 	public $uses;
+	public bool $isDynamic;
+	public $errors;
 
 	function __construct( $grammar, $key, $rawRules ) {
         $this->key = $key;
@@ -138,16 +138,13 @@ class Symbol {
 
         $this->baseRules = new RuleSet($this->grammar, $rawRules);
 
-		$this->clearState();		
+		$this->stack = [ $this->baseRules ];
+		$this->uses  = [];
+		$this->errors = [];
+		$this->baseRules->clearState();
 	}
 
-    function clearState() {
-		$this->stack = [ $this->baseRules ];
-		$this->uses = [];
-		$this->baseRules->clearState();
-    }
-
-    function selectRule($node, $errors) {
+	function selectRule($node, $errors) {
         $this->uses[] = ['node' => $node];
 
         if (count($this->stack) === 0) {
@@ -177,8 +174,6 @@ class Symbol {
     public function rulesToJSON() {
         return json_encode($this->rawRules);
     }
-
-
 }
 
 class RuleSet {
@@ -191,6 +186,7 @@ class RuleSet {
 	public $conditionalRule;
 	public $ranking;
 	public $distribution;
+	private $conditionalValues;
 
 	function __construct( $grammar, $raw ) {
 		$this->raw = $raw;
@@ -219,7 +215,7 @@ class RuleSet {
             // does this value match any of the conditionals?
             if ($this->conditionalValues[$value]) {
                 $v = $this->conditionalValues[$value]->selectRule($errors);
-                if (isset($v) && $v !== null)
+                if (isset($v))
                     return $v;
             }
             // No returned value?
@@ -229,14 +225,14 @@ class RuleSet {
         if ($this->ranking) {
             for ($i = 0; $i < count($this->ranking); $i++) {
                 $v = $this->ranking->selectRule();
-                if (isset($v) && $v !== null)
+                if (isset($v))
                     return $v;
             }
 
             // Still no returned value?
         }
 
-        if (isset($this->defaultRules) && $this->defaultRules !== null) {
+        if (isset($this->defaultRules)) {
             $index = 0;
             // Select from this basic array of rules
 
@@ -342,52 +338,33 @@ class Tracery {
 
 			'firstS' => function($s) {
 				$s2 = explode(' ', $s);
-
-				$finished = $this->baseEngModifiers()['s']($s2[0]) . " " . implode(' ', array_slice($s2, 1));
-				return $finished;
+				return $this->baseEngModifiers()['s']($s2[0]) . " " . implode(' ', array_slice($s2, 1));
 			},
 
 			's' => function($s) {
 				switch ($s[strlen($s) - 1]) {
 				case 's':
-					return $s . "es";
-					break;
 				case 'h':
-					return $s . "es";
-					break;
 				case 'x':
 					return $s . "es";
-					break;
 				case 'y':
 					if (!isVowel($s[strlen($s) - 2]))
 						return substr($s, 0, strlen($s) - 1) . "ies";
 					else
 						return $s . "s";
-					break;
 				default:
 					return $s . "s";
 				}
 			},
 			'ed' => function($s) {
 				switch ($s[strlen($s) - 1]) {
-				case 's':
-					return $s . "ed";
-					break;
 				case 'e':
 					return $s . "d";
-					break;
-				case 'h':
-					return $s . "ed";
-					break;
-				case 'x':
-					return $s . "ed";
-					break;
 				case 'y':
 					if (!isVowel($s[strlen($s) - 2]))
 						return substr($s, 0, strlen($s) - 1) . "ied";
 					else
 						return $s . "d";
-					break;
 				default:
 					return $s . "ed";
 				}
@@ -401,7 +378,7 @@ class Tracery {
 }
 
 function escapeRegExp($str) {
-	return preg_replace('/([.*+?^=!:${}()|\[\]\/\\])/', "\\$1", $str);
+	return preg_replace('/([.*+?^=!:${}()|\[\]\/\\\])/', "\\$1", $str);
 }
 
 function isAlphaNum($c) {
@@ -548,8 +525,8 @@ class TraceryNode {
                         preg_match($regExp, $this->modifiers[$i], $results);
                         if (!$results || count($results) < 2) {
                         } else {
-                            $modParams = explode(',', $result[1]);
-                            $modName = substr( $this->modifiers[i], 0, strpos($modname, '('));
+                            $modParams = explode(',', $results[1]);
+                            $modName = substr( $this->modifiers[$i], 0, strpos($modName, '('));
                         }
 
                     }
@@ -573,8 +550,8 @@ class TraceryNode {
             case 2:
 
                 // Just a bare action?  Expand it!
-                $this->action = new NodeAction($this, $this->raw);
-                $this->action->activate();
+                $action = new NodeAction($this, $this->raw);
+                $action->activate();
 
 				// No visible text for an action
                 // TODO: some visible text for if there is a failure to perform the action?
@@ -666,9 +643,7 @@ function tracery_parse($rule) {
 	$lastEscapedChar = null;
 
 	if ($rule === null) {
-		$sections = [];
 		$sections['errors'] = $errors;
-
 		return $sections;
 	}
 
@@ -717,7 +692,7 @@ function tracery_parse($rule) {
 
 			case '\\':
 				$escaped = true;
-				$escapedSubstring = $escapedSubstring + substr($rule, $start, $i);
+				$escapedSubstring .= substr($rule, $start, $i);
 				$start = $i + 1;
 				$lastEscapedChar = $i;
 				break;

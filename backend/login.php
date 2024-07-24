@@ -1,18 +1,16 @@
 <?php
+global $encryption_key, $conn, $body;
 method_check(['POST']);
 parameter_check($body, ['identifier', 'password']);
 
-$provider = 'https://bsky.social';
-if (isset($body['provider']) && $body['provider']) {
-	$provider = $body['provider'];
-}
+// Check provider, identifier and password
+$provider = empty($body['provider']) ? 'https://bsky.social' : $body['provider'];
 
-if (strpos($provider, '://') === false) {
+if (!str_contains($provider, '://')) {
 	return_error('PROVIDER_PROTOCOL_MISSING');
 }
 
-// In case a user tries typing the handle with a leading @, remove it
-if (substr($body['identifier'], 0, 1) === '@') {
+if (str_starts_with($body['identifier'], '@')) {
 	$body['identifier'] = substr($body['identifier'], 1);
 }
 
@@ -39,7 +37,7 @@ if ($result->num_rows) {
 		// Ah, our locally stored password is wrong! We should update it and carry on, then.
 		$iv = openssl_random_pseudo_bytes(16);
 		$iv_hex = bin2hex($iv);
-		$encrypted_password = openssl_encrypt( $body['password'], 'aes-256-cbc', $encryption_key, 0, $iv );
+		$encrypted_password = openssl_encrypt($body['password'], 'aes-256-cbc', $encryption_key, 0, $iv);
 
 		$query = 'UPDATE bbdq SET password = ?, iv = ? WHERE identifier = ? AND provider = ?';
 		$stmt = $conn->prepare($query);

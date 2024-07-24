@@ -2,6 +2,7 @@
 // This script is called automatically by a cron job every 24 hours
 
 // Get MySQL and Bluesky login details
+global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
 include('secrets.php');
 // Get fetch function
 include('functions.php');
@@ -14,10 +15,20 @@ $conn = mysqli_connect(
 	$mysql_db
 );
 
+function saveProfile(mixed $profile, false|mysqli $conn): void {
+	$avatar      = $profile['avatar'] ?? '';
+	$displayName = $profile['displayName'] ?? '';
+	$query       = 'UPDATE bbdq SET name = ?, thumb = ?, followers = ? WHERE did = ?';
+	$stmt        = $conn->prepare($query);
+	$stmt->bind_param('ssis', $displayName, $avatar, $profile['followersCount'], $profile['did']);
+	$stmt->execute();
+	$stmt->close();
+}
+
 // The function that is called when the bot runs
 // (Profiles on other servers than bsky.social can't be batch fetched using
 // $bbdq_bluesky_handle, so it was easiest to put that in its own function)
-function get_profiles() {
+function get_profiles(): void {
 	global $conn, $bbdq_bluesky_handle, $bbdq_bluesky_password;
 
 	// Get all identifiers from bsky.social
@@ -50,20 +61,13 @@ function get_profiles() {
 		]);
 
 		foreach ($res['profiles'] as $profile) {
-			$avatar = isset($profile['avatar']) ? $profile['avatar'] : '';
-			$displayName = isset($profile['displayName']) ? $profile['displayName'] : '';
-			$query = 'UPDATE bbdq SET name = ?, thumb = ?, followers = ? WHERE did = ?';
-			$stmt = $conn->prepare($query);
-			$stmt->bind_param('ssis', $displayName, $avatar, $profile['followersCount'], $profile['did']);
-			$stmt->execute();
-			$stmt->close();
+			saveProfile($profile, $conn);
 		}
 	}
 }
 
-function get_external_profiles() {
-	global $conn;
-	global $encryption_key;
+function get_external_profiles(): void {
+	global $conn, $encryption_key;
 
 	// Get all identifiers from bsky.social
 	$query = 'SELECT provider, password, iv, did FROM bbdq WHERE provider != "" AND provider != "https://bsky.social"';
@@ -87,13 +91,7 @@ function get_external_profiles() {
 			'token' => $session['accessJwt'],
 		]);
 
-		$avatar = isset($profile['avatar']) ? $profile['avatar'] : '';
-		$displayName = isset($profile['displayName']) ? $profile['displayName'] : '';
-		$query = 'UPDATE bbdq SET name = ?, thumb = ?, followers = ? WHERE did = ?';
-		$stmt = $conn->prepare($query);
-		$stmt->bind_param('ssis', $displayName, $avatar, $profile['followersCount'], $profile['did']);
-		$stmt->execute();
-		$stmt->close();
+		saveProfile($profile, $conn);
 	}
 }
 

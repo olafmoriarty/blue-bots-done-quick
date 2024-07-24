@@ -1,7 +1,7 @@
 <?php
 
 // Simplified function to send a CURL post request
-function fetch( $url, $options = [] ) {
+function fetch($url, $options = []) {
 	if (!$url) {
 		return;
 	}
@@ -61,27 +61,21 @@ function fetch( $url, $options = [] ) {
 
 // Create ATProto session
 function atproto_create_session($provider, $identifier, $password) {
-
 	if (!$provider) {
 		$provider = 'https://bsky.social';
 	}
 
-	$res = fetch($provider . '/xrpc/com.atproto.server.createSession', [
+	return fetch( $provider . '/xrpc/com.atproto.server.createSession', [
 		'body' => [
 			'identifier' => $identifier,
 			'password' => $password,
-		], 
-	]);	
-
-	return $res;
+		],
+	]);
 }
 
 // Post thread to bluesky
 function post_bsky_thread($text, $session, $options = []) {
-	$provider = 'https://bsky.social';
-	if (isset($options['provider']) && $options['provider']) {
-		$provider = $options['provider'];
-	}
+	$provider = $options['provider'] ?? 'https://bsky.social';
 
 	// Split text in 300 character chunks
 	$texts = [];
@@ -99,8 +93,8 @@ function post_bsky_thread($text, $session, $options = []) {
 
 	$texts_length = count($texts);
 
-	$root = isset($options['root']) ? $options['root'] : [];
-	$parent = isset($options['parent']) ? $options['parent'] : [];
+	$root = $options['root'] ?? [];
+	$parent = $options['parent'] ?? [];
 
 	date_default_timezone_set('UTC');
 
@@ -182,7 +176,7 @@ function return_json($c, $options = []) {
 	}
 	set_http_status_header($status);
 
-	if (!isset($c['status']) && substr($status, 0, 1) === '2') {
+	if (!isset($c['status']) && str_starts_with($status, '2')) {
 		$c['status'] = 1;
 	}
 	
@@ -252,7 +246,7 @@ function values_to_boolean($arr, $values) {
 		$values = [$values];
 	}
 	foreach ($values as $parameter) {
-		$arr[$parameter] = $arr[$parameter] ? true : false;
+		$arr[$parameter] = (bool) $arr[$parameter];
 	}
 	return $arr;
 }
