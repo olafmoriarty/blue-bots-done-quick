@@ -75,7 +75,7 @@ function atproto_create_session($provider, $identifier, $password) {
 
 // Post thread to bluesky
 function post_bsky_thread($text, $session, $options = []) {
-	$provider = $options['provider'] ?? 'https://bsky.social';
+	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
 
 	// Split text in 300 character chunks
 	$texts = [];
