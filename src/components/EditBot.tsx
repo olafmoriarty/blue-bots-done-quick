@@ -116,6 +116,7 @@ const defaultCode = `{
 			<section className="tracery-input">
 				<h3>Your bot's Tracery code</h3>
 				<textarea value={script} onChange={(ev) => updateScript(ev.target.value)} />
+				<p className="form-instructions">To include images (JPEG or PNG, max 1 MB), add <code>{"{img https://url.to/the-image Alt text}"}</code> to your output string.</p>
 			</section>
 			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
 				<section className="trace">
@@ -123,9 +124,9 @@ const defaultCode = `{
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 				</section>
 				<section className="preview">
-					<p className="floff">{grammar?.flatten(`#${origin}#`)}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`)}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`)}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
 				</section>
 				<section className="trace">
 					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>
@@ -133,9 +134,9 @@ const defaultCode = `{
 				</section>
 				<section className="preview">
 
-					<p className="floff">{grammar?.flatten(`#${reply}#`)}</p>
-					<p className="floff">{grammar?.flatten(`#${reply}#`)}</p>
-					<p className="floff">{grammar?.flatten(`#${reply}#`)}</p>
+					<p className="floff">{grammar?.flatten(`#${reply}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${reply}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${reply}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
 				</section>
 
 			<section className="settings">

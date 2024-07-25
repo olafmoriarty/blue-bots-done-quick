@@ -10,7 +10,6 @@ Think you can do better? You probably can! Feel free to borrow or steal as much 
 
 ## To do-list
 - Add support for rich text (links and mentions), which is currently not supported
-- Anything that has to do with using Tracery to generate images
 - Allow users to turn off automatic replies
 - Add an FAQ
 - Adding a Tracery tutorial would be nice ...
@@ -34,7 +33,7 @@ CREATE TABLE `bbdq` (
   `identifier` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `iv` varchar(32) NOT NULL,
-  `script` text DEFAULT NULL,
+  `script` mediumtext DEFAULT NULL,
   `language` varchar(2) NOT NULL DEFAULT 'en',
   `lastPost` datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   `lastPostText` text DEFAULT NULL,
@@ -59,7 +58,9 @@ CREATE TABLE `bbdq` (
 ### Backend
 In the `backend` folder, create a file named `secrets.php`. For security reasons this file is not included in the repo, but you can use the `secrets-template.php` file as a template on how to fill it in.
 
-Set up a cron job that runs `bot.php` every five minutes, and another cron job that runs `profiler-bot.php` once a day.
+Set up a cron job that runs `bot.php` every five minutes, and another cron job that runs `profiler-bot.php` as often as you wish to fetch avatars, display names and follower counts (mine runs once an hour).
+
+It may be a good idea to increase the max_execution_time in your PHP.ini.
 
 ### Frontend
 Install dependencies using `npm install` and then build it like you normally would.

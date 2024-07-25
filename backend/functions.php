@@ -1,4 +1,5 @@
 <?php
+include('atproto-functions.php');
 
 // Simplified function to send a CURL post request
 function fetch($url, $options = []) {
@@ -57,90 +58,6 @@ function fetch($url, $options = []) {
 	
 	curl_close($curl);
 	return json_decode( $response, true );
-}
-
-// Create ATProto session
-function atproto_create_session($provider, $identifier, $password) {
-	if (!$provider) {
-		$provider = 'https://bsky.social';
-	}
-
-	return fetch( $provider . '/xrpc/com.atproto.server.createSession', [
-		'body' => [
-			'identifier' => $identifier,
-			'password' => $password,
-		],
-	]);
-}
-
-// Post thread to bluesky
-function post_bsky_thread($text, $session, $options = []) {
-	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
-
-	// Split text in 300 character chunks
-	$texts = [];
-	while ($text) {
-		if (strlen($text) > 300) {
-			$length = strrpos( substr($text, 0, 300), ' ' );
-			$texts[] = substr($text, 0, $length);
-			$text = trim(substr($text, $length));
-		}
-		else {
-			$texts[] = $text;
-			$text = '';
-		}
-	}
-
-	$texts_length = count($texts);
-
-	$root = $options['root'] ?? [];
-	$parent = $options['parent'] ?? [];
-
-	date_default_timezone_set('UTC');
-
-	// For each chunk of text ...
-	for ($i = 0; $i < $texts_length; $i++) {
-
-		// Set a timestamp
-		$ms = microtime();
-		$ms_arr1 = explode(' ', $ms);
-		$ms_arr2 = explode('.', $ms_arr1[0]);
-		$timestamp = date('Y-m-d\TH:i:s.') . $ms_arr2[1] . 'Z';
-
-		// Create a record
-		$record = [
-			'$type' => 'app.bsky.feed.post',
-			'createdAt' => $timestamp,
-			'text' => $texts[$i],
-		];
-		if (isset($option['language']) && $option['language']) {
-			$record['langs'] = [ $option['language'] ];
-		}
-
-		// Add post to thread
-		if ($i > 0 || count($root) > 0) {
-			$record['reply'] = [
-				'root' => $root,
-				'parent' => $parent,
-			];
-		}
-
-		// Post to Bluesky
-		$result2 = fetch(  $provider . '/xrpc/com.atproto.repo.createRecord', [
-			'body' => [
-				'repo' => $session['did'],
-				'collection' => 'app.bsky.feed.post',
-				'record' => $record,
-			],
-			'token' => $session['accessJwt'],
-		] );
-
-		// Set root and parent for the next posts
-		if ($i === 0 && $root == []) {
-			$root = $result2;
-		}
-		$parent = $result2;
-	}
 }
 
 function return_json($c, $options = []) {

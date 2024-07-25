@@ -69,10 +69,17 @@ function run_bot() {
 			continue;
 		}
 
+		$regex = "/\{img (https?:\/\/[^ }]+) ?([^}]*)}/";
+		$text_without_image_tags = preg_replace( $regex, '', $text );
+
+		if ($text !== $text_without_image_tags) {
+			$text_without_image_tags .= "\n\n[Post contains images]";
+		}
+
 		// Update database
 		$query = 'UPDATE bbdq SET lastPost = NOW(), lastPostText = ? WHERE id = ?';
 		$stmt = $conn->prepare($query);
-		$stmt->bind_param('si', $text, $row['id']);
+		$stmt->bind_param('si', $text_without_image_tags, $row['id']);
 		$stmt->execute();
 		$stmt->close();
 

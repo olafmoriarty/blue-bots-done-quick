@@ -242,6 +242,17 @@ main .proceed button {
 	margin-bottom: 1rem;
 }
 
+.form-instructions {
+	font-size: .9rem;
+}
+
+.form-instructions code {
+	color: var(--headers);
+	background: var(--white);
+	font-size: .9rem;
+	font-weight: bold;
+}
+
 .floff {
 	background: var(--white);
 	border: solid 1px var(--black);
