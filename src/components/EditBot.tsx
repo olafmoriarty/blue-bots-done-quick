@@ -117,7 +117,7 @@ const defaultCode = `{
 				<h3>Your bot's Tracery code</h3>
 				<textarea value={script} onChange={(ev) => updateScript(ev.target.value)} />
 			</section>
-			{parsingError ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
+			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
 				<section className="trace">
 					<h3>Main Tracery rule (the one used when your bot is posting)</h3>
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
