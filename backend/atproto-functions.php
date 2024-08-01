@@ -25,8 +25,13 @@ function post_bsky_thread($text, $session, $options = []) {
 	$blobs = [];
 	if ($image_count) {
 		$text = preg_replace( $regex, '', $text );
+		if (!strlen($text)) {
+			$text = ' ';
+		}
 		foreach ($image_links as $key => $url) {
 			$data = upload_blob_from_url($url, $provider, $session['accessJwt']);
+			print_r($data);
+			echo '<br><br>';
 			if ($data && isset($data['blob'])) {
 				$blobs[] = [
 					'blob' => $data["blob"],
@@ -104,6 +109,8 @@ function post_bsky_thread($text, $session, $options = []) {
 			],
 			'token' => $session['accessJwt'],
 		] );
+		print_r($result2);
+		echo '<br><br>';
 
 		// Set root and parent for the next posts
 		if ($i === 0 && $root == []) {
@@ -120,7 +127,6 @@ function upload_blob_from_url( $url, $provider, $token ) {
 	}
 
 	try {
-
 		$curl = curl_init();
 
 		curl_setopt_array($curl, array(
