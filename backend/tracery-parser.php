@@ -59,7 +59,7 @@ class Grammar {
     }
 
     public function selectRule($key, $node, $errors) {
-        if ($this->symbols[$key]) {
+        if (isset($this->symbols[$key]) && $this->symbols[$key]) {
 	        return $this->symbols[$key]->selectRule($node, $errors);
         }
 

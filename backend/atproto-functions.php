@@ -1,4 +1,6 @@
 <?php
+include('atproto-rich-text.php');
+
 // Create ATProto session
 function atproto_create_session($provider, $identifier, $password) {
 	if (!$provider) {
@@ -15,6 +17,7 @@ function atproto_create_session($provider, $identifier, $password) {
 
 // Post thread to bluesky
 function post_bsky_thread($text, $session, $options = []) {
+	
 	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
 
 	// Check text for image tags
@@ -30,8 +33,6 @@ function post_bsky_thread($text, $session, $options = []) {
 		}
 		foreach ($image_links as $key => $url) {
 			$data = upload_blob_from_url($url, $provider, $session['accessJwt']);
-			print_r($data);
-			echo '<br><br>';
 			if ($data && isset($data['blob'])) {
 				$blobs[] = [
 					'blob' => $data["blob"],
@@ -81,6 +82,27 @@ function post_bsky_thread($text, $session, $options = []) {
 			$record['langs'] = [ $option['language'] ];
 		}
 
+		// Add rich text facets
+		$facets = detectFacets($texts[$i]);
+		if ($facets) {
+			$facet_count = count($facets);
+			for ($f = 0; $f < $facet_count; $f++) {
+				if ($facets[$f]['features'][0]['$type'] === 'app.bsky.richtext.facet#mention') {
+					$handle = $facets[$f]['features'][0]['did'];
+
+					$profile = fetch(  $provider . '/xrpc/app.bsky.actor.getProfile', [
+						'method' => 'GET',
+						'query' => '?actor=' . $handle,
+						'token' => $session['accessJwt'],
+					] );
+					if (isset($profile['did'])) {
+						$facets[$f]['features'][0]['did'] = $profile['did'];
+					}
+				}
+			}
+			$record['facets'] = $facets;
+		}
+
 		// Add post to thread
 		if ($i > 0 || count($root) > 0) {
 			$record['reply'] = [
@@ -109,8 +131,6 @@ function post_bsky_thread($text, $session, $options = []) {
 			],
 			'token' => $session['accessJwt'],
 		] );
-		print_r($result2);
-		echo '<br><br>';
 
 		// Set root and parent for the next posts
 		if ($i === 0 && $root == []) {
