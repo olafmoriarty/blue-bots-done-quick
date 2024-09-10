@@ -15,6 +15,94 @@ function atproto_create_session($provider, $identifier, $password) {
 	]);
 }
 
+function atproto_session($conn, $encryption_key, $id) {
+	$query = 'SELECT id, provider, did, password, iv, accessJwt, TIMESTAMPDIFF(MINUTE, NOW(), IFNULL(accessJwt_time, \'2000-01-01\')) as accessJwt_time_left, refreshJwt, TIMESTAMPDIFF(MINUTE, NOW(), IFNULL(refreshJwt_time, \'2000-01-01\')) as refreshJwt_time_left FROM bbdq WHERE id = ?';
+	
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('i', $id);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+
+	if (!$result->num_rows) {
+		return ['error' => 'NO_SUCH_USER'];
+	}
+
+	$row = $result->fetch_assoc();
+
+	// Is the access token still valid?
+	if ($row['accessJwt_time_left'] > 5) {
+		$access_token = openssl_decrypt($row['accessJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+
+		return [
+			'accessJwt' => $access_token,
+			'did' => $row['did'],
+		];
+	}
+
+	// If not, do we have a valid refresh token?
+
+	$provider = $row['provider'];
+	if (!$provider) {
+		$provider = 'https://bsky.social';
+	}
+
+	if ($row['refreshJwt_time_left'] > 5) {
+		$refresh_token = openssl_decrypt($row['refreshJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+
+		// Fetch a new access token
+		$session = fetch( $provider . '/xrpc/com.atproto.server.refreshSession', [
+			'token' => $refresh_token,
+		]);
+
+		if (isset($session['accessJwt'])) {
+			// Save new token to database ...
+
+			// TODO: Check headers for token lifespan instead of assuming two hours
+			$encrypted_access_token = openssl_encrypt($session['accessJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+			$query = 'UPDATE bbdq SET accessJwt = ?, accessJwt_time = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE id = ?';
+			$stmt = $conn->prepare($query);
+			$stmt->bind_param('si', $encrypted_access_token, $id);
+			$stmt->execute();
+			$stmt->close();
+
+			// Return the session
+			return $session;
+		}
+	}
+
+	// No valid tokens found, so let's create a new one.
+	$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+
+	$session = fetch( $provider . '/xrpc/com.atproto.server.createSession', [
+		'body' => [
+			'identifier' => $row['did'],
+			'password' => $password,
+		],
+	]);
+	
+	if (isset($session['accessJwt'])) {
+		// Save new tokens to database ...
+
+		// TODO: Check headers for token lifespan instead of assuming two hours / two months
+		$encrypted_access_token = openssl_encrypt($session['accessJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+		$encrypted_refresh_token = openssl_encrypt($session['refreshJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+		$query = 'UPDATE bbdq SET accessJwt = ?, accessJwt_time = DATE_ADD(NOW(), INTERVAL 2 HOUR), refreshJwt = ?, refreshJwt_time = DATE_ADD(NOW(), INTERVAL 58 DAY) WHERE id = ?';
+		$stmt = $conn->prepare($query);
+		$stmt->bind_param('ssi', $encrypted_access_token, $encrypted_refresh_token, $id);
+		$stmt->execute();
+		$stmt->close();
+
+		// Return the session
+		return $session;
+	}
+
+	// Nothing worked :-(
+	return [
+		'error' => 'Could not create session.',
+	];
+}
+
 // Post thread to bluesky
 function post_bsky_thread($text, $session, $options = []) {
 	

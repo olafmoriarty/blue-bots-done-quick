@@ -25,9 +25,8 @@ function run_bot() {
 	global $encryption_key;
 
 	$post_length = 300;
-
 	// Get bots
-	$query = 'SELECT id, provider, identifier, did, password, iv, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2';
+	$query = 'SELECT id, provider, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -62,8 +61,7 @@ function run_bot() {
 			continue;
 		}
 		$provider = $row['provider'] ?: 'https://bsky.social';
-		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-		$session = atproto_create_session($provider, $row['did'], $password);
+		$session = atproto_session($conn, $encryption_key, $row['id']);
 		if (isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
@@ -97,7 +95,7 @@ function check_replies() {
 	$post_length = 300;
 
 	// Get all active bots
-	$query = 'SELECT id, provider, did, identifier, password, iv, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
+	$query = 'SELECT id, provider, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -121,9 +119,7 @@ function check_replies() {
 		// Check for new replies
 		$provider = $row['provider'] ?: 'https://bsky.social';
 
-		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-
-		$session = atproto_create_session($provider, $row['did'], $password);
+		$session = atproto_session($conn, $encryption_key, $row['id']);
 		if (isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
