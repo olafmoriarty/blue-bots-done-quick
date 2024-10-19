@@ -124,9 +124,9 @@ const defaultCode = `{
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 				</section>
 				<section className="preview">
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/g, '[Image]')}</p>
 				</section>
 				<section className="trace">
 					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>

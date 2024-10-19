@@ -109,7 +109,7 @@ function post_bsky_thread($text, $session, $options = []) {
 	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
 
 	// Check text for image tags
-	$regex = "/\{img (https?:\/\/[^ }]+) ?([^}]*)}/";
+	$regex = "/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/";
 	preg_match_all( $regex, $text, $matches );
 	$image_links = array_slice($matches[1], 0, 4);
 	$image_count = count($image_links);
