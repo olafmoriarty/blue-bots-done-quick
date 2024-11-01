@@ -648,10 +648,9 @@ function tracery_parse($rule) {
 	}
 
 	for ($i = 0; $i < strlen($rule); $i++) {
-
 		if (!$escaped) {
 			$c = $rule[$i];
-
+			
 			switch($c) {
 
 			// Enter a deeper bracketed section
@@ -692,7 +691,7 @@ function tracery_parse($rule) {
 
 			case '\\':
 				$escaped = true;
-				$escapedSubstring .= substr($rule, $start, $i);
+				$escapedSubstring .= substr($rule, $start, $i - $start);
 				$start = $i + 1;
 				$lastEscapedChar = $i;
 				break;
