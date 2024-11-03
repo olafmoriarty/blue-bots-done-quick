@@ -25,4 +25,5 @@ dist-ssr
 
 # PHP passwords
 test.php
+info.php
 secrets.php

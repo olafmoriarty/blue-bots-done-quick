@@ -244,13 +244,19 @@ main .proceed button {
 
 .form-instructions {
 	font-size: .9rem;
+	border: solid 2px var(--header-background);
+	padding: 1rem;
 }
 
 .form-instructions code {
+	display: inline-block;
+	padding: .25rem;
+	border-radius: .25rem;
 	color: var(--headers);
 	background: var(--white);
 	font-size: .9rem;
 	font-weight: bold;
+	border: solid 1px var(--green);
 }
 
 .floff {

@@ -108,23 +108,85 @@ function post_bsky_thread($text, $session, $options = []) {
 	
 	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
 
-	// Check text for image tags
-	$regex = "/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/";
-	preg_match_all( $regex, $text, $matches );
-	$image_links = array_slice($matches[1], 0, 4);
-	$image_count = count($image_links);
 	$blobs = [];
-	if ($image_count) {
-		$text = preg_replace( $regex, '', $text );
-		if (!strlen($text)) {
-			$text = ' ';
+	$possible_tags = ['img', 'svg'];
+	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
+
+	preg_match_all( $regex, $text, $matches, PREG_SET_ORDER );
+	$text = preg_replace( $regex, '', $text );
+	if (!strlen($text)) {
+		$text = ' ';
+	}
+	foreach ( $matches as $tag ) {
+		// Strip backslashes used to escape } symbols
+		if (isset($tag[2])) {
+			$tag[2] = str_replace('\\}', '}', $tag[2]);
 		}
-		foreach ($image_links as $key => $url) {
-			$data = upload_blob_from_url($url, $provider, $session['accessJwt']);
+
+		// Handle images
+		if ($tag[1] === 'img') {
+
+			// Are there already four images in this post?
+			if (count($blobs) >= 4) {
+				continue;
+			}
+
+			// Is there an image?
+			if (!isset($tag[2])) {
+				continue;
+			}
+
+			// is it written in the correct format?
+			$is_image = preg_match("/(https?:\/\/[^  }]+)[  ]?(.*)/", $tag[2], $img_matches);
+			if (!$is_image) {
+				continue;
+			}
+
+			$alt = '';
+			if (isset($img_matches[2])) {
+				$alt = $img_matches[2];
+			}
+
+			// Upload image, get blob
+			$data = upload_blob_from_url($img_matches[1], $provider, $session['accessJwt']);
 			if ($data && isset($data['blob'])) {
 				$blobs[] = [
 					'blob' => $data["blob"],
-					'alt' => $matches[2][$key],
+					'alt' => $alt,
+				];
+			}
+		}
+
+		// Handle SVG images
+		if ($tag[1] === 'svg') {
+
+			// Are there already four images in this post?
+			if (count($blobs) >= 4) {
+				continue;
+			}
+
+			// Is there an image?
+			if (!isset($tag[2])) {
+				continue;
+			}
+
+			// is it written in the correct format?
+			$is_svg = preg_match("/^(<svg.*<\/svg>)(?:[  ]?(.*))?$/s", $tag[2], $img_matches);
+			if (!$is_svg) {
+				continue;
+			}
+
+			$alt = '';
+			if (isset($img_matches[2])) {
+				$alt = $img_matches[2];
+			}
+
+			// Upload image, get blob
+			$data = upload_blob_from_svg($img_matches[1], $provider, $session['accessJwt']);
+			if ($data && isset($data['blob'])) {
+				$blobs[] = [
+					'blob' => $data["blob"],
+					'alt' => $alt,
 				];
 			}
 		}
@@ -251,6 +313,60 @@ function upload_blob_from_url( $url, $provider, $token ) {
 
 		$image = curl_exec($curl);
 		$content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+
+		// Upload it to bsky
+		$curl = curl_init();
+
+		$headers = [
+			'Content-Type: ' . $content_type,
+			'Accept: application/json',
+			'Authorization: Bearer ' . $token
+		];
+
+		if (isset($options['body'])) {
+			$data = $image;
+		}
+
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $provider . '/xrpc/com.atproto.repo.uploadBlob',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+
+			CURLOPT_HTTPHEADER => $headers,
+		));
+
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $image);
+
+		$response = curl_exec($curl);
+		
+		curl_close($curl);
+		return json_decode( $response, true );
+	}
+	catch ( Exception $e ) {
+		return;
+	}
+}
+
+
+function upload_blob_from_svg( $svg, $provider, $token ) {
+	// Get file
+	if (!$svg || !$provider || !$token) {
+		return;
+	}
+
+	try {
+
+		$content_type = 'image/png';
+
+		$image = new Imagick();
+		$image->readImageBlob($svg);
+		$image->setImageFormat('png');
+		$blob = $image->getImageBlob();
 
 		// Upload it to bsky
 		$curl = curl_init();

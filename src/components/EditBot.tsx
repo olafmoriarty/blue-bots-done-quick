@@ -109,6 +109,8 @@ const defaultCode = `{
 		setIsFetching(false);
 	}
 
+	const stripImagesRegex = /\{(img|svg)(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/g;
+
 	return (
 		<main className="main-content">
 			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <button className="link" onClick={() => logOut()}>click here</button>.</p>}
@@ -116,7 +118,7 @@ const defaultCode = `{
 			<section className="tracery-input">
 				<h3>Your bot's Tracery code</h3>
 				<textarea value={script} onChange={(ev) => updateScript(ev.target.value)} />
-				<p className="form-instructions">To include images (JPEG or PNG, max 1 MB), add <code>{"{img https://url.to/the-image Alt text}"}</code> to your output string.</p>
+				<p className="back"><a href="#instructions">Insert images, SVGs and hashtags</a></p>
 			</section>
 			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
 				<section className="trace">
@@ -124,9 +126,9 @@ const defaultCode = `{
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 				</section>
 				<section className="preview">
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/g, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/g, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(/\{img[  ](https?:\/\/[^  }]+)[  ]?([^}]*)}/g, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(stripImagesRegex, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(stripImagesRegex, '[Image]')}</p>
+					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(stripImagesRegex, '[Image]')}</p>
 				</section>
 				<section className="trace">
 					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>
@@ -186,6 +188,11 @@ const defaultCode = `{
 			</section>}
 			{showDeleteForm ? <DeleteBot /> : null}
 			</>}
+			<div className="form-instructions" id="instructions">
+					<p>To include images (JPEG or PNG, max 1 MB), add <code>{"{img https://url.to/the-image Alt text}"}</code> to your output string.</p>
+					<p>To include SVG images, add <code>{"{svg <svg [...]>[...]</svg> Alt text}"}</code> to your output string. Note that quotation marks must be escaped using backslashes - instead of e.g. <code>width="300"</code>, type <code>width=\"300\"</code>.</p>
+					<p>URLs and mentions are converted into links. <strong>Don't</strong> abuse the mentions. Hashtags work as long as you escape the octothorpe symbol using double backslashes: <code>\\#hashtag</code>.</p>
+				</div>
 			<p className="back"><button onClick={() => logOut()}>Log out</button></p>
 		</main>
   )
