@@ -49,9 +49,12 @@ function run_bot() {
 		$grammar->addModifiers($tracery->baseEngModifiers());
 
 		$text = '';
+		$possible_tags = ['img', 'svg'];
+		$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
+		
 		for ($i = 0; $i < 10; $i++) {
 			$generated_text = $grammar->flatten('#' . $row['msg'] . '#');
-			if (strlen($generated_text) <= $post_length || $row['actionIfLong'] == 1) {
+			if (strlen(preg_replace( $regex, '', $generated_text )) <= $post_length || $row['actionIfLong'] == 1) {
 				$text = $generated_text;
 				break;
 			}

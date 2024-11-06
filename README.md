@@ -64,6 +64,8 @@ In the `backend` folder, create a file named `secrets.php`. For security reasons
 
 Set up a cron job that runs `bot.php` every five minutes, and another cron job that runs `profiler-bot.php` as often as you wish to fetch avatars, display names and follower counts (mine runs once an hour).
 
+Install ImageMagick, imagick and an RSVG library. These are required to convert user-generated SVG images to Bluesky-friendly PNGs.
+
 It may be a good idea to increase the max_execution_time in your PHP.ini.
 
 ### Frontend

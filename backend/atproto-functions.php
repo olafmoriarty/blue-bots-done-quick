@@ -110,7 +110,10 @@ function post_bsky_thread($text, $session, $options = []) {
 
 	$blobs = [];
 	$possible_tags = ['img', 'svg'];
-	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
+	// This regex doesn't work in PHP for strings longer than about 8200 characters??
+//	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
+	// This one does, but does not allow you to escape } characters. Still, better than the alternative?
+	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]([^}]*))?}/';
 
 	preg_match_all( $regex, $text, $matches, PREG_SET_ORDER );
 	$text = preg_replace( $regex, '', $text );
@@ -191,7 +194,7 @@ function post_bsky_thread($text, $session, $options = []) {
 			}
 		}
 	}
-
+exit;
 	// Split text in 300 character chunks
 	$texts = [];
 	while ($text) {
