@@ -4,6 +4,7 @@ import { usePage } from '../App';
 import ErrorMessage from './ErrorMessage';
 import DeleteBot from './DeleteBot';
 import languages from '../data/languages.json';
+import Preview from './Preview';
 
 function EditBot() {
 
@@ -46,7 +47,7 @@ const defaultCode = `{
 
 	const updateScript = (inputText? : string) => {
 		let text = script;
-		if (inputText) {
+		if (inputText !== undefined) {
 			text = inputText;
 			setScript(text);
 		}
@@ -109,8 +110,6 @@ const defaultCode = `{
 		setIsFetching(false);
 	}
 
-	const stripImagesRegex = /\{(img|svg)(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/g;
-
 	return (
 		<main className="main-content">
 			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <button className="link" onClick={() => logOut()}>click here</button>.</p>}
@@ -124,22 +123,15 @@ const defaultCode = `{
 				<section className="trace">
 					<h3>Main Tracery rule (the one used when your bot is posting)</h3>
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
-				</section>
-				<section className="preview">
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(stripImagesRegex, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(stripImagesRegex, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${origin}#`).replace(stripImagesRegex, '[Image]')}</p>
+					<h3>Post preview</h3>
+				<Preview text={grammar?.flatten(`#${origin}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} />
 				</section>
 				<section className="trace">
 					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>
 					<select value={reply} onChange={(ev) => setReply(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
-				</section>
-				<section className="preview">
-
-					<p className="floff">{grammar?.flatten(`#${reply}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${reply}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
-					<p className="floff">{grammar?.flatten(`#${reply}#`).replace(/\{img (https?:\/\/[^ }]+) ?([^}]*)}/g, '[Image]')}</p>
-				</section>
+					<h3>Reply preview</h3>
+					<Preview text={grammar?.flatten(`#${reply}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} />
+					</section>
 
 			<section className="settings">
 				<h3>Posting frequency</h3>

@@ -15,7 +15,7 @@ if (str_starts_with($body['identifier'], '@')) {
 }
 
 // Check if user exists
-$query = 'SELECT password, iv, active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource FROM bbdq WHERE identifier = ? AND provider = ?';
+$query = 'SELECT password, iv, active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider = ?';
 $stmt = $conn->prepare($query);
 $stmt->bind_param('ss', $body['identifier'], $provider);
 $stmt->execute();
@@ -107,7 +107,7 @@ else {
 		}
 
 		// Get return values from database
-		$query = 'SELECT active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource FROM bbdq WHERE id = ?';
+		$query = 'SELECT active, provider, identifier, script, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE id = ?';
 		$stmt = $conn->prepare($query);
 		$stmt->bind_param('i', $id);
 		$stmt->execute();

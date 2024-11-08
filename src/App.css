@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Kanit&display=swap');
 :root {
 	--padding: 1rem;
 
@@ -89,6 +88,27 @@ p {
 	border-radius: .5rem;
 }
 
+.front-page h2, .front-page .centered {
+	text-align: center;
+}
+
+.bot-grid article {
+	margin-bottom: 1rem;
+}
+
+.bot-grid article .bluesky-post {
+	margin-bottom: 0;
+}
+.bot-grid .show-source-button {
+max-width: 37.5rem;
+text-align: right;
+margin: 0 auto 0;
+}
+
+.bot-grid .show-source-button button {
+	width: initial;
+
+}
 @media screen and (min-width: 800px) {
 	.front-page .buttons {
 		display: grid;
@@ -269,6 +289,120 @@ main .proceed button {
 	padding: 1rem;
 }
 
+.bluesky-post {
+	background: #ffffff;
+	color: rgb(11, 35, 20);
+	border: solid 1px rgb(212, 219, 226);
+	letter-spacing: 0px;
+	font-size: 1.171875rem;
+	line-height: 1.5rem;
+	font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+	padding: 1rem;
+	font-variant: no-contextual;
+	white-space: pre-wrap;
+	border-radius: .75rem;
+	max-width: 37.5rem;
+	margin: 0 auto 1rem;
+}
+
+.bluesky-post-top-row {
+	padding-bottom: .75rem;
+	display: flex;
+	flex-direction: row;
+	gap: .75rem;
+	align-items: stretch;
+	flex-basis: auto;
+	flex-shrink: 0;
+}
+
+.bluesky-post-avatar {
+	display: block;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+}
+
+.no-avatar {
+	background: var(--green);
+}
+
+.bluesky-post-name-and-handle {
+	display: flex;
+	flex-direction: column;
+}
+
+.bluesky-post-name-and-handle p {
+	margin: 0;
+}
+
+.bluesky-post-name {
+	font-size: 1.0546875rem;
+	font-weight: 600;
+	color: rgb(11, 15, 20);
+	line-height: 1.375rem;
+}
+
+.bluesky-post-name a, .bluesky-post-handle a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.bluesky-post-handle {
+	font-size: .9375rem;
+	color: rgb(66, 87, 108);
+	line-height: 1.25rem;
+}
+
+.bluesky-post-images {
+	margin-top: .75rem;
+	display: grid;
+	gap: .25rem;
+	grid-template-columns: 1fr 1fr;
+	border-radius: .75rem;
+	overflow: hidden;
+}
+
+.bluesky-post-images img, .bluesly-post-images svg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.bluesky-post-images article:first-child:nth-last-child(1) img, .bluesky-post-images article:first-child:nth-last-child(1) svg {
+	border-radius: .75rem;
+	width: initial;
+	height: initial;
+}
+
+
+.bluesky-post-images:has(article:first-child:nth-last-child(1)) {
+	grid-template-columns: 1fr;
+}
+
+.bluesky-post-images:has(article:first-child:nth-last-child(4)) {
+	aspect-ratio: 1.5 / 1;
+}
+
+.bluesky-post-images:has(article:first-child:nth-last-child(3)), .bluesky-post-images:has(article:first-child:nth-last-child(2)) {
+	aspect-ratio: 2/1;
+}
+
+.bluesky-post-images:has(article:first-child:nth-last-child(3)) article:first-child {
+	grid-row-start: 1;
+	grid-row-end: 3;	
+}
+
+.bluesky-post-images img, .bluesky-post-images svg {
+	display: block;
+	max-width: 100%;
+}
+
+.bluesky-post-date {
+	margin-top: .5rem;
+	font-size: .8203125rem;
+	margin-bottom: 0;
+}
+
 .error {
 	font-weight: bold;
 	text-align: center;
@@ -362,7 +496,7 @@ main .proceed button {
 	white-space: pre-wrap;
 	padding: 1rem;
 	border: dotted 2px var(--headers);
-	margin-bottom: 1rem;
+	margin-top: 1rem;
 }
 
 

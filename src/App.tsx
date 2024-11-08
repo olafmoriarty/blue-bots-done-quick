@@ -148,6 +148,8 @@ export type BotSettingsFromAPI = {
 	reply : string|null,
 	actionIfLong : boolean,
 	showSource : boolean,
+	name? : string,
+	thumb? : string,
 }
 
 export default App;

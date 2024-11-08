@@ -15,7 +15,7 @@ const FrontPage = () => {
 
 	}, []);
 
-	const getBots = async (sort? : string, limit = 10) => {
+	const getBots = async (sort? : string, limit = 20) => {
 		let queryString = '';
 		if (sort === 'activeSince') {
 			queryString += '&sort=activeSince';
@@ -43,11 +43,15 @@ const FrontPage = () => {
 				popularBots.length ?
 				<>
 					<h2>Popular BBDQ bots</h2>
+					<section className="bot-grid">
 					{popularBots.map(el => <BotPreview element={el} />)}
-					<p><em>(Follower counts are updated once an hour.)</em></p>
+					</section>
+					<p className="centered"><em>(Follower counts are updated once an hour.)</em></p>
 					<h2>New BBDQ bots</h2>
+					<section className="bot-grid">
 					{newBots.map(el => <BotPreview element={el} />)}
-					<p><em>(Display names and avatars are retrieved/updated once an hour.)</em></p>
+					</section>
+					<p className="centered"><em>(Display names and avatars are retrieved/updated once an hour.)</em></p>
 				</>
 				:
 				null
