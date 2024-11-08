@@ -49,7 +49,7 @@ function run_bot() {
 		$grammar->addModifiers($tracery->baseEngModifiers());
 
 		$text = '';
-		$possible_tags = ['img', 'svg'];
+		$possible_tags = ['img', 'svg', 'alt'];
 		$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
 		
 		for ($i = 0; $i < 10; $i++) {
@@ -194,7 +194,7 @@ function check_replies() {
 	
 			foreach ($replies as $reply) {
 				$text = '';
-				$possible_tags = ['img', 'svg'];
+				$possible_tags = ['img', 'svg', 'alt'];
 				$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
 				
 				for ($i = 0; $i < 10; $i++) {

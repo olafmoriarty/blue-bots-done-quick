@@ -109,7 +109,7 @@ function post_bsky_thread($text, $session, $options = []) {
 	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
 
 	$blobs = [];
-	$possible_tags = ['img', 'svg'];
+	$possible_tags = ['img', 'svg', 'alt'];
 	// This regex doesn't work in PHP for strings longer than about 8200 characters??
 //	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
 	// This one does, but does not allow you to escape } characters. Still, better than the alternative?
@@ -193,8 +193,26 @@ function post_bsky_thread($text, $session, $options = []) {
 				];
 			}
 		}
+		if ($tag[1] === 'alt') {
+			// Abort if no actual alt text is given
+			if (!isset($tag[2])) {
+				continue;
+			}
+			
+			// How many blobs are there?
+			$number_of_blobs = count($blobs);
+			
+			// Abort if no blobs
+			if (!$number_of_blobs) {
+				continue;
+			}
+
+			// Set previous image's alt text
+			$blobs[$number_of_blobs - 1]['alt'] = $tag[2];
+
+		}
 	}
-exit;
+
 	// Split text in 300 character chunks
 	$texts = [];
 	while ($text) {
