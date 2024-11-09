@@ -43,7 +43,7 @@ const Preview = (props : Props) => {
 			}
 
 			images.push(<article>
-				<img src={`data:image/svg+xml;base64, ${btoa(imgMatches[1])}`} alt={imgMatches[2] || ''} />
+				<img src={`data:image/svg+xml;base64, ${btoa(unescape(encodeURIComponent(imgMatches[1])))}`} alt={imgMatches[2] || ''} />
 			</article>);
 		}
 	});
