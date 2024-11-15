@@ -182,7 +182,9 @@ const defaultCode = `{
 			</>}
 			<div className="form-instructions" id="instructions">
 					<p>To include images (JPEG or PNG, max 1 MB), add <code>{"{img https://url.to/the-image Alt text}"}</code> to your output string.</p>
-					<p>To include SVG images, add <code>{"{svg <svg [...]>[...]</svg> Alt text}"}</code> to your output string. Note that quotation marks must be escaped using backslashes - instead of e.g. <code>width="300"</code>, type <code>width=\"300\"</code>.</p>
+					<p>To include SVG images, add <code>{"{svg <svg [...]>[...]</svg> Alt text}"}</code> to your output string.</p>
+					<ul>
+						<li>Note that quotation marks must be escaped using backslashes - instead of e.g. <code>width="300"</code>, type <code>width=\"300\"</code>.</li><li>Also note that the <code>{"<foreignObject>"}</code> tag <strong>is not supported</strong> (sorry) and that including external files, e.g. in <code>{"<image>"}</code> tags, only work if you use the <code>xlink:href</code> attribute (using plain href instead will not work).</li></ul>
 					<p>You can also use <code>{"{alt Alt text}"}</code> to add alt text, if you prefer that syntax. Alt texts added this way will always be attached to the previous img or svg displayed, and will overwrite any already existing alt text.</p>
 					<p>URLs and mentions are converted into links. <strong>Don't</strong> abuse the mentions. Hashtags work as long as you escape the octothorpe symbol using double backslashes: <code>\\#hashtag</code>.</p>
 				</div>

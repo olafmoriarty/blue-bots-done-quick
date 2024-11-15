@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 const Preview = (props : Props) => {
 	const stripImagesRegex = /\{(img|svg|alt)(?:[  ]([^}]*))?}/g;
 	const {text} = props;
@@ -42,9 +44,19 @@ const Preview = (props : Props) => {
 				return;
 			}
 
-			images.push(<article>
-				<img src={`data:image/svg+xml;base64, ${btoa(unescape(encodeURIComponent(imgMatches[1])))}`} alt={imgMatches[2] || ''} />
-			</article>);
+			// Does the SVG contain external images?
+			if (!imgMatches[1].includes('xlink:href')) {
+				// Preferred/prettiest preview format, but it doesn't work with external images without setting up some advanced async solution to fetch image data... 
+				images.push(<article>
+					<img src={`data:image/svg+xml;base64, ${btoa(unescape(encodeURIComponent(imgMatches[1])))}`} alt={imgMatches[2] || ''} />
+				</article>);
+
+			}
+			else {
+				// Not as pretty, and needs to be sanitized, but at least it should work for all SVGs
+				images.push(<article className="svg-box" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(imgMatches[1])}}>
+				</article>);
+			}
 		}
 	});
 

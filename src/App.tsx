@@ -11,7 +11,8 @@ const PageContext = createContext( {} as ContextType );
 export const usePage = () => useContext(PageContext);
 
 const App = () => {
-	const backendURI = 'https://bluebotsdonequick.com/backend/';
+//	const backendURI = 'https://bluebotsdonequick.com/backend/';
+const backendURI = 'http://localhost/tracery/';
 
 	const [page, setPage] = useState('');
 	const [loginDetails, setLoginDetails] = useState(undefined as LoginInformation|undefined);

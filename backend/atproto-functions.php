@@ -382,6 +382,10 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 
 	try {
 
+		$svg = preg_replace_callback( "/xlink:href=\"([^\"]+)\"/", function($matches) {
+			return 'xlink:href="' . base64_from_url($matches[1]) . '"';
+		}, $svg );
+		
 		$content_type = 'image/png';
 
 		$image = new Imagick();
@@ -424,5 +428,37 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 	}
 	catch ( Exception $e ) {
 		return;
+	}
+}
+
+function base64_from_url( $url ) {
+	// Get file
+	if (!$url) {
+		return '';
+	}
+
+	try {
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $url,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		));
+
+		curl_setopt($curl, CURLOPT_HTTPGET, true);
+
+		$image = curl_exec($curl);
+		$content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+
+		return('data:' . $content_type . ';base64, ' . base64_encode($image));
+
+	}
+	catch ( Exception $e ) {
+		return '';
 	}
 }

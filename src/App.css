@@ -368,6 +368,14 @@ main .proceed button {
 	object-fit: cover;
 }
 
+.bluesky-post-images .svg-box {
+	overflow: auto;
+}
+
+.bluesky-post-images .svg-box svg {
+	max-width: initial;
+}
+
 .bluesky-post-images article:first-child:nth-last-child(1) img, .bluesky-post-images article:first-child:nth-last-child(1) svg {
 	border-radius: .75rem;
 	width: initial;
