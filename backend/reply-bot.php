@@ -31,8 +31,15 @@ function check_replies() {
 	global $encryption_key;
 	$post_length = 300;
 
-	// Get all active bots
-	$query = 'SELECT identifier, id, provider, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1';
+	// Update timestamp for all non-replying bots so that if they start replying at some point they won't post replies for the past ten years of replies
+	$new_last_notification = $notifications[0]['indexedAt'];
+	$query = 'UPDATE bbdq SET lastNotification = REPLACE(UTC_TIMESTAMP(), " ", "T") WHERE active = 1 AND reply = ""';
+	$stmt = $conn->prepare($query);
+	$stmt->execute();
+	$stmt->close();
+
+	// Get all active bots that should reply
+	$query = 'SELECT identifier, id, provider, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1 AND reply != ""';
 	if ($letter) {
 		$query .= ' AND SUBSTRING(did, 9, 1) = ?';
 	}
@@ -168,7 +175,8 @@ function check_replies() {
 			}
 		}
 
-	}	
+	}
+	
 }
-
+// REPLACE(UTC_TIMESTAMP(), " ", "T")
 check_replies();

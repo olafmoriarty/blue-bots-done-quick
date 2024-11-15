@@ -27,7 +27,7 @@ const defaultCode = `{
 	const [script, setScript] = useState(botSettings?.script || defaultCode);
 	const [parsingError, setParsingError] = useState(false);
 	const [origin, setOrigin] = useState(botSettings?.msg || 'origin');
-	const [reply, setReply] = useState(botSettings?.reply || 'origin');
+	const [reply, setReply] = useState(botSettings?.reply || '');
 	const [minutesBetweenPosts, setMinutesBetweenPosts] = useState(botSettings?.minutesBetweenPosts || 720);
 	const [active, setActive] = useState(botSettings?.active);
 	const [language, setLanguage] = useState(botSettings?.language || "en");
@@ -128,9 +128,9 @@ const defaultCode = `{
 				</section>
 				<section className="trace">
 					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>
-					<select value={reply} onChange={(ev) => setReply(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
-					<h3>Reply preview</h3>
-					<Preview text={grammar?.flatten(`#${reply}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} />
+					<select value={reply} onChange={(ev) => setReply(ev.target.value)}><option key="none" value="">Do not post replies</option>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
+					{reply ? <><h3>Reply preview</h3>
+					<Preview text={grammar?.flatten(`#${reply}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} /></> : null}
 					</section>
 
 			<section className="settings">

@@ -8,15 +8,6 @@ Live version: https://bluebotsdonequick.com - go there to build your own bot if 
 
 Think you can do better? You probably can! Feel free to borrow or steal as much of this code as you want to.
 
-## To do-list
-- Allow users to turn off automatic replies
-- Add an FAQ
-- Adding a Tracery tutorial would be nice ...
-
-(Suggestions are welcome!)
-
-Note that while I do believe this code is functional, it is not fully tested. I guess you could call it a public beta?
-
 ## Installation
 The frontend is written in React using TypeScript and Vite. The backend is written in PHP with a MySQL database.
 
@@ -61,7 +52,7 @@ CREATE TABLE `bbdq` (
 ### Backend
 In the `backend` folder, create a file named `secrets.php`. For security reasons this file is not included in the repo, but you can use the `secrets-template.php` file as a template on how to fill it in.
 
-Set up a cron job that runs `bot.php` every five minutes, and another cron job that runs `profiler-bot.php` as often as you wish to fetch avatars, display names and follower counts (mine runs once an hour).
+Set up a cron job that runs `bot.php` every five minutes, another cron job that runs `reply-bot.php` every five minutes, a third cron job that runs `profiler-bot.php` as often as you wish to fetch avatars, display names and follower counts (mine runs once an hour).
 
 Install ImageMagick, imagick and an RSVG library. These are required to convert user-generated SVG images to Bluesky-friendly PNGs.
 

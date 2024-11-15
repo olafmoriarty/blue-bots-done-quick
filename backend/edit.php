@@ -43,16 +43,16 @@ if (!$script || !is_array($script)) {
 	return_error('INVALID_JSON');
 }
 
-// Check if the selected rules for post and reply actually exist
+// Check if the selected rules for post actually exist
 $rule = $body['msg'] ?? $row['msg'];
 if (!$rule || !isset($script[$rule])) {
 	return_error('ORIGIN_RULE_MISSING');
 }
 
-// Check if the selected rules for post and reply actually exist
+// Reply rule should either exist or be an empty string
 $rule = $body['reply'] ?? $row['reply'];
 if (!$rule || !isset($script[$rule])) {
-	return_error('REPLY_RULE_MISSING');
+	$body['reply'] = '';
 }
 
 // If minutesBetweenPosts is given, check if it's a number
@@ -82,7 +82,7 @@ foreach ($possible_fields as $field) {
 if (count($fields_to_update)) {
 	$query = 'UPDATE bbdq SET ' . implode(' = ?, ', $fields_to_update) . ' = ?';
 	if (isset($body['active']) && $body['active'] && !$row['activeSince']) {
-		$query .= ', activeSince = NOW(), lastNotification = REPLACE(NOW(), " ", "T")';
+		$query .= ', activeSince = NOW(), lastNotification = REPLACE(UTC_TIMESTAMP(), " ", "T")';
 	}
 	$query .= ' WHERE identifier = ? AND provider = ?';
 	$bind_param_string .= 'ss';
