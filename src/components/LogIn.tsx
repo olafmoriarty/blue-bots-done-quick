@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { usePage } from "../App"
+import { usePage } from "../context/PageContext";
 import ErrorMessage from "./ErrorMessage";
+import { Link } from "react-router-dom";
 
 const LogIn = () => {
-	const {error, loginDetails, setPage, attemptLogin, isWorking} = usePage();
+	const {error, loginDetails, attemptLogin, isWorking} = usePage();
 
 	const [providerFieldActive, setProviderFieldActive] = useState(false);
 	const [provider, setProvider] = useState(loginDetails ? loginDetails.provider : 'https://bsky.social');
@@ -36,7 +37,7 @@ const LogIn = () => {
 				<input type="password" placeholder="abcd-efgh-ijkl-mnop" value={password} onChange={(ev) => setPassword(ev.target.value)} required /></label></p>
 				<p className="proceed"><button type="submit">Configure bot</button></p>
 			</form>
-			<p className="back"><button onClick={() => setPage('')}>Go back</button></p>
+			<p className="back"><Link to="/">Go back</Link></p>
 		</main>
 	)
 }

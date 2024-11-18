@@ -48,9 +48,11 @@ header h1 {
 	padding: 0 var(--padding);
 }
 
+body:has(.front-page) header a {
+	text-decoration: none;
+}
 h1 {
-	font-size: 3rem;
-	text-align: center;
+	font-size: 2rem;
 	color: var(--headers);
 }
 
@@ -92,6 +94,22 @@ p {
 	text-align: center;
 }
 
+.bot-grid h2 {
+	margin-bottom: 0;
+}
+
+.bot-grid .view-all {
+	text-align: center;
+}
+
+.bot-grid li img {
+	display: block;
+	width: 50px;
+	height: 50px;
+	object-fit: contain;
+	border-radius: 25px;
+}
+
 .bot-grid article {
 	margin-bottom: 1rem;
 }
@@ -109,8 +127,33 @@ margin: 0 auto 0;
 	width: initial;
 
 }
+
+.bot-list-element {
+	margin-bottom: 1.5rem;
+}
+.bot-list-element .bluesky-post {
+	width: 37.5rem;
+	max-width: 100%;
+	margin-bottom: 0;
+}
+
+.bot-list-meta {
+	text-align: center;
+}
+.bot-list-meta p {
+	margin-bottom: .5rem;
+}
+
+.bot-list-settings {
+	margin-bottom: 1.5rem;
+}
+
+.bot-list-setting-sort {
+	white-space: nowrap;
+}
+
 @media screen and (min-width: 800px) {
-	.front-page .buttons {
+	.front-page .buttons, .front-page .front-page-columns {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		gap: 1rem;
@@ -120,7 +163,20 @@ margin: 0 auto 0;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1rem;
 	}
-	
+
+	.bot-list-element {
+		display: flex;
+		gap: .5rem;
+	}
+	.bot-list-meta {
+		text-align: left;
+	}
+
+	.bot-list-settings {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+	}
 }
 
 .front-page h2 {
@@ -203,7 +259,7 @@ input[type=radio], input[type=checkbox] {
 	border-radius: 0;
 }
 
-main button {
+main button, main .button {
 	font-size: 1rem;
 	width: 100%;
 	font: inherit;
@@ -211,6 +267,9 @@ main button {
 	margin-top: var(--padding);
 	background: var(--green);
 	border-radius: .25rem;
+	border: solid 1px var(--black);
+	text-align: center;
+	text-decoration: none;
 }
 
 main .less-attractive-button {
@@ -250,6 +309,21 @@ main button.link, .back button {
 
 main .proceed button {
 	width: initial;
+}
+
+.settings-heading {
+	display: flex;
+	align-items: center;
+	margin-top: 1.5rem;
+	margin-bottom: 1rem;
+	gap: 1rem;
+}
+
+.settings-heading h2 {
+	margin: 0;
+}
+.settings-heading p {
+	margin: 0;
 }
 
 .tracery-input textarea {
@@ -315,6 +389,7 @@ main .proceed button {
 	flex-shrink: 0;
 }
 
+
 .bluesky-post-avatar {
 	display: block;
 	width: 42px;
@@ -351,6 +426,12 @@ main .proceed button {
 	font-size: .9375rem;
 	color: rgb(66, 87, 108);
 	line-height: 1.25rem;
+}
+
+.bluesky-post-source-link {
+	font-size: .9375rem;
+	line-height: 1.25rem;
+	font-weight: bold;
 }
 
 .bluesky-post-images {
@@ -507,6 +588,25 @@ main .proceed button {
 	margin-top: 1rem;
 }
 
+footer {
+	width: 60rem;
+	max-width: 100%;
+	margin: 3rem auto 0;
+	padding: var(--padding);
+	border-top: solid 1px var(--black);
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+}
+
+footer p {
+	margin-bottom: 0;
+}
+
+footer ul {
+	list-style-type: none;
+	margin: 0;
+}
 
 /*
 

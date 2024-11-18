@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePage } from "../App";
+import { usePage } from "../context/PageContext";
 import ErrorMessage from "./ErrorMessage";
 
 const DeleteBot = () => {

@@ -18,9 +18,32 @@ if ($count > 100) {
 	$count = 100;
 }
 
+$page = 1;
+if (isset($body['page']) && is_numeric($body['page'])) {
+	$page = $body['page'];
+}
+$page = floor($page);
+if ($page < 1) {
+	$page = 1;
+}
+$handle = '';
+if (isset($body['handle'])) {
+	$handle = $body['handle'];
+}
 
-$query = 'SELECT name, did, identifier, lastPostText, thumb, script, showSource FROM bbdq WHERE active = 1 ORDER BY ' . $sorting_criteria . ' LIMIT ' . $count;
+
+
+$query = 'SELECT name, did, identifier, lastPostText, thumb, script, showSource, followers, activeSince FROM bbdq WHERE active = 1';
+if ($handle) {
+	$query .= ' AND identifier = ?';
+}
+else {
+	$query .= ' ORDER BY ' . $sorting_criteria . ' LIMIT ' . (($page - 1) * $count ) . ', ' . $count;
+}
 $stmt = $conn->prepare($query);
+if ($handle) {
+	$stmt->bind_param('s', $handle);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $stmt->close();
@@ -34,4 +57,12 @@ while ($row = $result->fetch_assoc()) {
 	$data[] = $row;
 }
 
-return_json(['data' => $data]);
+$query = 'SELECT COUNT(id) AS total FROM bbdq WHERE active = 1';
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+$total_row = $result->fetch_assoc();
+$total = $total_row['total'];
+
+return_json(['data' => $data, 'total' => $total]);

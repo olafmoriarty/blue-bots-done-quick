@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import tracery from 'tracery-grammar';
-import { usePage } from '../App';
+import { usePage } from "../context/PageContext";
 import ErrorMessage from './ErrorMessage';
 import DeleteBot from './DeleteBot';
 import languages from '../data/languages.json';
 import Preview from './Preview';
+import { Link, useNavigate } from 'react-router-dom';
 
-function EditBot() {
+function EditBot(props : {demo? : boolean}) {
 
 const defaultCode = `{
     "origin": [
@@ -22,6 +23,8 @@ const defaultCode = `{
 }`;
 
 	const {botSettings, loginDetails, backendURI, logOut} = usePage();
+
+	const navigate = useNavigate();
 
 	const [grammar, setGrammar] = useState( null as ReturnType<typeof tracery.createGrammar> | null );
 	const [script, setScript] = useState(botSettings?.script || defaultCode);
@@ -40,6 +43,10 @@ const defaultCode = `{
 	const [showDeleteForm, setShowDeleteForm] = useState(false);
 
 	useEffect(() => {
+		if (!props.demo && !botSettings) {
+			navigate('/login');
+		}
+	
 		if (!grammar) {
 			updateScript();
 		}
@@ -112,8 +119,11 @@ const defaultCode = `{
 
 	return (
 		<main className="main-content">
-			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <button className="link" onClick={() => logOut()}>click here</button>.</p>}
+			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <Link to="/">click here</Link>.</p>}
+			<section className="settings-heading">
 			<h2>Settings for {botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"}</h2>
+			<p><button className="link" onClick={() => logOut('/login')}>Log out ...</button></p>
+			</section>
 			<section className="tracery-input">
 				<h3>Your bot's Tracery code</h3>
 				<textarea value={script} onChange={(ev) => updateScript(ev.target.value)} />
@@ -191,7 +201,7 @@ const defaultCode = `{
 					<p>You can also use <code>{"{alt Alt text}"}</code> to add alt text, if you prefer that syntax. Alt texts added this way will always be attached to the previous img or svg displayed, and will overwrite any already existing alt text.</p>
 					<p>URLs and mentions are converted into links. <strong>Don't</strong> abuse the mentions. Hashtags work as long as you escape the octothorpe symbol using double backslashes: <code>\\#hashtag</code>.</p>
 				</div>
-			<p className="back"><button onClick={() => logOut()}>Log out</button></p>
+			<p className="back"><Link to="/">Back</Link></p>
 		</main>
   )
 }

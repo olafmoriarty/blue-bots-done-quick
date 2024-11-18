@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { usePage } from "../App";
-import BotPreview from "./BotPreview";
+import { Link } from "react-router-dom";
+import { usePage } from "../context/PageContext";
+import BotPreviewType from "../types/BotPreviewType";
 
 const FrontPage = () => {
 	const {backendURI} = usePage();
@@ -15,6 +16,10 @@ const FrontPage = () => {
 
 	}, []);
 
+	useEffect(() => {
+		console.log(popularBots);
+	}, [popularBots]);
+
 	const getBots = async (sort? : string, limit = 20) => {
 		let queryString = '';
 		if (sort === 'activeSince') {
@@ -26,7 +31,23 @@ const FrontPage = () => {
 		return json.data;
 	}
 
-	const {setPage} = usePage(); 
+	const BotList = (botListProps : { list : BotPreviewType[] }) => {
+		return (
+		<ol>
+		{botListProps.list.map(el => <li key={el.identifier} className="bluesky-post-top-row">
+				<a href={`https://bsky.app/profile/${el.did}`} target="_blank">{el.thumb ? <img src={el.thumb} alt={el.identifier} className="bluesky-post-avatar" /> : <div className="bluesky-post-avatar no-avatar" />}</a>
+				<div className="bluesky-post-name-and-handle">
+					<p className="bluesky-post-name"><a href={`https://bsky.app/profile/${el.did}`} target="_blank">{el.name || el.identifier}</a></p>
+					<p className="bluesky-post-handle"><a href={`https://bsky.app/profile/${el.did}`} target="_blank">{el.identifier}</a></p>
+					{el.script ? <p className="bluesky-post-source-link"><Link to={`/bots/${el.identifier}`}>View source ...</Link></p> : null}
+				</div>
+
+		</li>)}
+		</ol>
+		);
+
+	}
+
 	return (
 		<main className="front-page">
 			<div className="front-page-info">
@@ -35,38 +56,36 @@ const FrontPage = () => {
 
 			</div>
 			<section className="buttons">
-				<button onClick={() => setPage('create')}>Create a Bluesky bot</button>
-				<button onClick={() => setPage('login')}>Edit your bot</button>
+				<Link to="/create" className="button">Create a Bluesky bot</Link>
+				<Link to="/edit" className="button">Edit your bot</Link>
 			</section>
-			<p className="back"><button onClick={() => setPage('demo')}>View a demo</button></p>
+			<p className="back"><Link to="/demo">View a demo</Link></p>
 			{
 				popularBots.length ?
 				<>
+					<div className="front-page-columns">
+
+					<section className="bot-grid">
 					<h2>Popular BBDQ bots</h2>
-					<section className="bot-grid">
-					{popularBots.map(el => <BotPreview element={el} />)}
+					<p className="view-all"><Link to="/bots">View all ...</Link></p>
+					<BotList list={popularBots} />
 					</section>
-					<p className="centered"><em>(Follower counts are updated once an hour.)</em></p>
+
+					<section className="bot-grid">
 					<h2>New BBDQ bots</h2>
-					<section className="bot-grid">
-					{newBots.map(el => <BotPreview element={el} />)}
+					<p className="view-all"><Link to="/bots?sort=activeSince">View all ...</Link></p>
+					<ol>
+					<BotList list={newBots} />
+					</ol>
 					</section>
-					<p className="centered"><em>(Display names and avatars are retrieved/updated once an hour.)</em></p>
+
+					</div>
 				</>
 				:
 				null
 			}
 		</main>
 	)
-}
-
-export type BotPreviewType = {
-	name? : string,
-	did : string,
-	identifier : string,
-	lastPostText? : string,
-	thumb? : string,
-	script? : string,
 }
 
 export default FrontPage;

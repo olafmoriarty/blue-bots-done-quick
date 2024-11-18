@@ -5,7 +5,7 @@ const Preview = (props : Props) => {
 	const {text} = props;
 	const matches = [...text.matchAll(stripImagesRegex)];
 	let images = [] as JSX.Element[];
-	matches.forEach(match => {
+	matches.forEach((match, index) => {
 		if (match[1] === 'img') {
 			// Are there already four images in this post?
 			if (images.length >= 4) {
@@ -23,7 +23,7 @@ const Preview = (props : Props) => {
 				return;
 			}
 
-			images.push(<article>
+			images.push(<article key={index}>
 				<img src={imgMatches[1]} alt={imgMatches[2] || ''} />
 			</article>);
 		}
@@ -47,14 +47,14 @@ const Preview = (props : Props) => {
 			// Does the SVG contain external images?
 			if (!imgMatches[1].includes('xlink:href')) {
 				// Preferred/prettiest preview format, but it doesn't work with external images without setting up some advanced async solution to fetch image data... 
-				images.push(<article>
+				images.push(<article key={index}>
 					<img src={`data:image/svg+xml;base64, ${btoa(unescape(encodeURIComponent(imgMatches[1])))}`} alt={imgMatches[2] || ''} />
 				</article>);
 
 			}
 			else {
 				// Not as pretty, and needs to be sanitized, but at least it should work for all SVGs
-				images.push(<article className="svg-box" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(imgMatches[1])}}>
+				images.push(<article key={index} className="svg-box" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(imgMatches[1])}}>
 				</article>);
 			}
 		}

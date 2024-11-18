@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { usePage } from "../App";
+import { usePage } from "../context/PageContext";
+import { Link } from "react-router-dom";
 
 const CreateBot = () => {
-	const {setPage, attemptLogin, isWorking} = usePage(); 
+	const {attemptLogin, isWorking} = usePage(); 
 	const [step, setStep] = useState(0);
 	const [providerFieldActive, setProviderFieldActive] = useState(false);
 	const [provider, setProvider] = useState('https://bsky.social');
@@ -68,7 +69,7 @@ const CreateBot = () => {
 				<h2>Create a bot</h2>
 				{steps[step]}
 			</div>
-			<p className="back"><button onClick={() => setPage('')}>Go back</button></p>
+			<p className="back"><Link to="/">Go back</Link></p>
 		</main>
 	)
 }
