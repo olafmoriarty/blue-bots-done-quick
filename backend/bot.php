@@ -26,7 +26,7 @@ function run_bot() {
 
 	$post_length = 300;
 	// Get bots
-	$query = 'SELECT id, provider, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2';
+	$query = 'SELECT id, provider, script, msg, actionIfLong, language FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();

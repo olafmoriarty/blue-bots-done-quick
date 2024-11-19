@@ -146,6 +146,7 @@ const defaultCode = `{
 			<section className="settings">
 				<h3>Posting frequency</h3>
 				<select value={minutesBetweenPosts} onChange={(ev) => setMinutesBetweenPosts(parseInt(ev.target.value))}>
+					<option value={0}>Never</option>
 					<option value={10}>Every 10 minutes</option>
 					<option value={30}>Every 30 minutes</option>
 					<option value={60}>Every hour</option>
