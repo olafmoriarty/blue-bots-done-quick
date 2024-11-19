@@ -452,6 +452,7 @@ main .proceed button {
 
 .bluesky-post-images .svg-box {
 	overflow: auto;
+	font: initial;
 }
 
 .bluesky-post-images .svg-box svg {
