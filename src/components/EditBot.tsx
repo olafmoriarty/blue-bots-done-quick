@@ -134,13 +134,13 @@ const defaultCode = `{
 					<h3>Main Tracery rule (the one used when your bot is posting)</h3>
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 					<h3>Post preview</h3>
-				<Preview text={grammar?.flatten(`#${origin}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} />
+				<Preview text={grammar?.flatten(`#${origin}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
 				</section>
 				<section className="trace">
 					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>
 					<select value={reply} onChange={(ev) => setReply(ev.target.value)}><option key="none" value="">Do not post replies</option>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 					{reply ? <><h3>Reply preview</h3>
-					<Preview text={grammar?.flatten(`#${reply}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} /></> : null}
+					<Preview text={grammar?.flatten(`#${reply}#`)} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} /></> : null}
 					</section>
 
 			<section className="settings">

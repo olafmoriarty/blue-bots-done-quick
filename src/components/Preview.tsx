@@ -5,6 +5,7 @@ const Preview = (props : Props) => {
 	const {text} = props;
 	const matches = [...text.matchAll(stripImagesRegex)];
 	let images = [] as JSX.Element[];
+	let alts = [] as string[];
 	matches.forEach((match, index) => {
 		if (match[1] === 'img') {
 			// Are there already four images in this post?
@@ -26,6 +27,8 @@ const Preview = (props : Props) => {
 			images.push(<article key={index}>
 				<img src={imgMatches[1]} alt={imgMatches[2] || ''} />
 			</article>);
+
+			alts.push(imgMatches[2] || '');
 		}
 		if (match[1] === 'svg') {
 			// Are there already four images in this post?
@@ -57,7 +60,20 @@ const Preview = (props : Props) => {
 				images.push(<article key={index} className="svg-box" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(imgMatches[1])}}>
 				</article>);
 			}
+			alts.push(imgMatches[2] || '');
 		}
+
+		if (match[1] === 'alt' && alts.length > 0) {
+			// Is there an alt text?
+			if (match[2] === undefined) {
+				return;
+			}
+
+			// Add alt text to previous image
+			alts[alts.length - 1] = match[2];
+
+		}
+
 	});
 
 	const LinkIfExists = (linkProps : {children : string|JSX.Element}) => {
@@ -80,6 +96,11 @@ const Preview = (props : Props) => {
 			{images.length ? <div className="bluesky-post-images">
 				{images}
 			</div> : null}
+			{props.showAlts && images.length ? 
+				<div className="alt-texts">
+					{alts.map((el, index) => <p><strong>Alt text {index + 1}:</strong> {el ? el : <span className="error-text">Alt text is missing for this image</span>}</p>)}
+				</div>
+			: null}
 			{props.hideDate ? null :
 				<p className="bluesky-post-date">January 1, 1970 at 1:00 AM</p>
 			}
@@ -94,6 +115,7 @@ type Props = {
 	avatar? : string,
 	link? : string,
 	hideDate? : boolean,
+	showAlts? : boolean,
 }
 
 export default Preview;

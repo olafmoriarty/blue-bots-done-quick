@@ -84,8 +84,9 @@ p {
 	margin-bottom: 1rem;
 }
 
-.front-page .buttons button {
+.front-page .buttons button, .front-page .buttons .button {
 	font: inherit;
+	display: block;
 	padding: .5rem;
 	border-radius: .5rem;
 }
@@ -486,6 +487,15 @@ main .proceed button {
 	max-width: 100%;
 }
 
+.alt-texts {
+	font-size: .8rem;
+	margin-top: .5rem;
+}
+
+.alt-texts p {
+	margin-bottom: .25rem;
+}
+
 .bluesky-post-date {
 	margin-top: .5rem;
 	font-size: .8203125rem;
@@ -500,6 +510,10 @@ main .proceed button {
 	padding: .5rem;
 	border-radius: .5rem;
 	background: var(--white);
+}
+
+.error-text {
+	color: #aa0000;
 }
 
 .updating {

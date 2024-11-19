@@ -12,8 +12,7 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 
 	const navigate = useNavigate();
 
-//	const backendURI = import.meta.env.DEV ? 'http://localhost/tracery/' : 'https://bluebotsdonequick.com/backend/';
-	const backendURI = 'https://bluebotsdonequick.com/backend/';
+	const backendURI = import.meta.env.DEV ? 'http://localhost/tracery/' : 'https://bluebotsdonequick.com/backend/';
 
 	useEffect(() => {
 		if (botSettings) {
