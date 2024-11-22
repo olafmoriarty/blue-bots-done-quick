@@ -32,7 +32,6 @@ function check_replies() {
 	$post_length = 300;
 
 	// Update timestamp for all non-replying bots so that if they start replying at some point they won't post replies for the past ten years of replies
-	$new_last_notification = $notifications[0]['indexedAt'];
 	$query = 'UPDATE bbdq SET lastNotification = REPLACE(UTC_TIMESTAMP(), " ", "T") WHERE active = 1 AND reply = ""';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
@@ -106,13 +105,14 @@ function check_replies() {
 			if ($notif['indexedAt'] <= $row['lastNotification']) {
 				continue;
 			}
+			$new_reply = 0;
 			if ($notif['reason'] === 'reply') {
 				$parent = [
 					'uri' => $notif['uri'],
 					'cid' => $notif['cid']
 				];
 				$root = $notif['record']['reply']['root'];
-				$replies[] = [
+				$new_reply = [
 					'parent' => $parent,
 					'root' => $root,
 				];
@@ -126,10 +126,27 @@ function check_replies() {
 				if (isset($notif['record']['reply'])) {
 					$root = $notif['record']['reply']['root'];
 				}
-				$replies[] = [
+				$new_reply = [
 					'parent' => $parent,
 					'root' => $root,
 				];
+			}
+			if (is_array($new_reply)) {
+				$author_did = $notif['author']['did'];
+
+				// Check that author is NOT another bot
+				$query = 'SELECT COUNT(id) AS botcount FROM bbdq WHERE did = ?';
+				$stmt = $conn->prepare($query);
+				$stmt->bind_param('s', $author_did);
+				$stmt->execute();
+				$botcount = $stmt->get_result();
+				$stmt->close();
+
+				$botcountrow = $botcount->fetch_assoc();
+				if (!$botcountrow['botcount']) {
+					$replies[] = $new_reply;
+				}
+
 			}
 		}
 
