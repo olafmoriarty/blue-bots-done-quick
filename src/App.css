@@ -327,14 +327,54 @@ main .proceed button {
 	margin: 0;
 }
 
-.tracery-input textarea {
-	display: block;
-	width: 100%;
+.highlighting-container {
+	position: relative;
 	height: 15rem;
-	color: var(--default-text);
-	padding: .5rem;
-	resize: vertical;
 	margin-bottom: 1rem;
+}
+
+.highlighting, .highlighting-textarea {
+	height: 15rem;
+	max-height: 15rem;
+	width: 100%;
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-family: monospace;
+	font-weight: bold;
+	font-size: .8rem;
+	line-height: 1rem;
+	padding: .5rem;
+	tab-size: 4;
+	border: none;
+	overflow: auto;
+}
+
+.highlighting {
+	background: var(--black);
+	color: #ff0000;
+	overflow: hidden;
+	z-index: 0;
+}
+
+.highlighting-textarea {
+	color: transparent;
+	background-color: transparent;
+	caret-color: var(--green);
+	z-index: 1;
+	resize: none;
+}
+
+.highlighting .hljs-punctuation {
+	color: var(--green);
+}
+.highlighting .hljs-attr {
+	color: var(--header-background);
+}
+
+.highlighting .hljs-string {
+	color: var(--white);
 }
 
 .form-instructions {

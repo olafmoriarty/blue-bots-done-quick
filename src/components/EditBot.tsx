@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import tracery from 'tracery-grammar';
+
 import { usePage } from "../context/PageContext";
 import ErrorMessage from './ErrorMessage';
 import DeleteBot from './DeleteBot';
 import languages from '../data/languages.json';
 import Preview from './Preview';
 import { Link, useNavigate } from 'react-router-dom';
+import HighlightedTextarea from './HighlightedTextarea';
 
 function EditBot(props : {demo? : boolean}) {
 
@@ -137,7 +139,7 @@ const defaultCode = `{
 			</section>
 			<section className="tracery-input">
 				<h3>Your bot's Tracery code</h3>
-				<textarea value={script} onChange={(ev) => updateScript(ev.target.value)} />
+				<HighlightedTextarea script={script} updateScript={updateScript} />
 				<p className="back"><a href="#instructions">Insert images, SVGs and hashtags</a></p>
 			</section>
 			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
