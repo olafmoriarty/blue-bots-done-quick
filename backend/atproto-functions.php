@@ -382,7 +382,7 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 
 	try {
 
-		$svg = preg_replace_callback( "/xlink:href=\"([^\"]+)\"/", function($matches) {
+		$svg = preg_replace_callback( ["/xlink:href=\"([^\"]+)\"/", "/xlink:href=\'([^\']+)\'/"], function($matches) {
 			return 'xlink:href="' . base64_from_url($matches[1]) . '"';
 		}, $svg );
 		
