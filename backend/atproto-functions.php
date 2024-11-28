@@ -156,6 +156,7 @@ function post_bsky_thread($text, $session, $options = []) {
 				$blobs[] = [
 					'blob' => $data["blob"],
 					'alt' => $alt,
+					'aspectRatio' => $data['aspectRatio'],
 				];
 			}
 		}
@@ -190,6 +191,7 @@ function post_bsky_thread($text, $session, $options = []) {
 				$blobs[] = [
 					'blob' => $data["blob"],
 					'alt' => $alt,
+					'aspectRatio' => $data['aspectRatio'],
 				];
 			}
 		}
@@ -285,7 +287,7 @@ function post_bsky_thread($text, $session, $options = []) {
 		if ($i === 0 && count($blobs)) {
 			$images = [];
 			foreach ($blobs as $blob) {
-				$images[] = [ "image" => $blob['blob'], "alt" => $blob['alt'] ];
+				$images[] = [ "image" => $blob['blob'], "alt" => $blob['alt'], "aspectRatio" => $blob['aspectRatio'] ];
 			}
 			$record['embed'] = [
 				'$type' => 'app.bsky.embed.images',
@@ -335,6 +337,10 @@ function upload_blob_from_url( $url, $provider, $token ) {
 		$image = curl_exec($curl);
 		$content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
 
+		// Get image dimensions
+		$image_size = getimagesize('data:' . $content_type . ';base64, ' . base64_encode($image));
+		$aspect_ratio = ['width' => $image_size[0], 'height' => $image_size[1]];
+
 		// Upload it to bsky
 		$curl = curl_init();
 
@@ -366,7 +372,10 @@ function upload_blob_from_url( $url, $provider, $token ) {
 		$response = curl_exec($curl);
 		
 		curl_close($curl);
-		return json_decode( $response, true );
+
+		$response_json = json_decode( $response, true );
+		$response_json['aspectRatio'] = $aspect_ratio;
+		return $response_json;
 	}
 	catch ( Exception $e ) {
 		return;
@@ -393,6 +402,10 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 		$image->setImageFormat('png');
 		$blob = $image->getImageBlob();
 
+		// Get image dimensions
+		$image_size = getimagesize('data:' . $content_type . ';base64, ' . base64_encode($image));
+		$aspect_ratio = ['width' => $image_size[0], 'height' => $image_size[1]];
+
 		// Upload it to bsky
 		$curl = curl_init();
 
@@ -424,7 +437,10 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 		$response = curl_exec($curl);
 		
 		curl_close($curl);
-		return json_decode( $response, true );
+
+		$response_json = json_decode( $response, true );
+		$response_json['aspectRatio'] = $aspect_ratio;
+		return $response_json;
 	}
 	catch ( Exception $e ) {
 		return;
