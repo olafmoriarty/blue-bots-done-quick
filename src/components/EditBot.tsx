@@ -8,6 +8,7 @@ import languages from '../data/languages.json';
 import Preview from './Preview';
 import { Link, useNavigate } from 'react-router-dom';
 import HighlightedTextarea from './HighlightedTextarea';
+import TraceryWysiwygEditor from './TraceryWysiwigEditor';
 
 function EditBot(props : {demo? : boolean}) {
 
@@ -46,6 +47,16 @@ const defaultCode = `{
 
 	const [showDeleteForm, setShowDeleteForm] = useState(false);
 
+	const [editorMode, setEditorMode] = useState('wysiwyg' as 'wysiwyg'|'json');
+
+	// Get editor mode from localStorage
+	useEffect(() => {
+		const storedEditorMode = localStorage.getItem('editorMode');
+		if (storedEditorMode && (storedEditorMode === 'wysiwyg' || storedEditorMode === 'json')) {
+			setEditorMode(storedEditorMode);
+		}
+	}, []);
+
 	useEffect(() => {
 		if (!props.demo && !botSettings) {
 			navigate('/login');
@@ -64,6 +75,10 @@ const defaultCode = `{
 		setReplyPreviewText(grammar?.flatten(`#${reply}#`) || '');
 	}, [grammar, reply]);
 
+	const changeEditorMode = (mode : 'wysiwyg'|'json') => {
+		setEditorMode(mode);
+		localStorage.setItem('editorMode', mode);
+	}
 
 	const updateScript = (inputText? : string) => {
 		let text = script;
@@ -139,7 +154,17 @@ const defaultCode = `{
 			</section>
 			<section className="tracery-input">
 				<h3>Your bot's Tracery code</h3>
-				<HighlightedTextarea script={script} updateScript={updateScript} />
+				<div className="tracery-mode-tags">
+					<button className={`wysiwyg-button ${parsingError ? 'button-not-active' : ''} ${editorMode === 'wysiwyg' ? 'active' : ''}`} onClick={!parsingError ? () => changeEditorMode('wysiwyg') : undefined}>Editor view</button>
+					<button className={`json-button ${editorMode === 'json' ? 'active' : ''}`} onClick={() => changeEditorMode('json')}>JSON view</button>
+				</div>
+				{editorMode === 'wysiwyg' ? 
+					<TraceryWysiwygEditor script={script} updateScript={updateScript} origin={origin} /> 
+				: 
+					<HighlightedTextarea script={script} updateScript={updateScript} />
+				}
+				
+				
 				<p className="back"><a href="#instructions">Insert images, SVGs and hashtags</a></p>
 			</section>
 			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>

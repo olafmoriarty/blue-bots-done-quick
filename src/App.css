@@ -327,15 +327,44 @@ main .proceed button {
 	margin: 0;
 }
 
+.tracery-mode-tags {
+	display: flex;
+	gap: .5rem;
+	margin-left: 1rem;
+}
+
+.tracery-mode-tags button {
+	width: initial;
+	background-color: var(--white);
+	font-size: .8rem;
+	padding: .25rem .5rem;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	margin-top: 0;
+}
+
+.tracery-mode-tags button.json-button {
+	color: var(--white);
+	background: var(--black);
+}
+
+.tracery-mode-tags button.wysiwyg-button.button-not-active {
+	color: #aa0000;
+}
+
+.tracery-mode-tags button.active {
+	border-bottom: none;
+}
+
 .highlighting-container {
 	position: relative;
-	height: 15rem;
+	height: 20rem;
 	margin-bottom: 1rem;
 }
 
 .highlighting, .highlighting-textarea {
-	height: 15rem;
-	max-height: 15rem;
+	height: 20rem;
+	max-height: 20rem;
 	width: 100%;
 	display: block;
 	position: absolute;
@@ -349,13 +378,95 @@ main .proceed button {
 	tab-size: 4;
 	border: none;
 	overflow: auto;
+	white-space: pre-wrap;
+	scrollbar-gutter: stable;
 }
 
+.highlighting-textarea:focus {
+	outline: none;
+}
+.wysiwyg {
+	background: var(--white);
+	padding: 1rem;
+	border: solid 1px var(--black);
+	border-radius: .5rem;
+	margin-top: -1px;
+}
+
+.json-textarea {
+	margin-top: -1px;
+}
+
+.wysiwyg .highlighting-container {
+	height: 15rem;
+	border: solid 1px var(--black);
+	border-radius: .25rem;
+	background: var(--black);
+	overflow: hidden;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	margin-bottom: .5rem;
+}
+.wysiwyg .highlighting, .wysiwyg .highlighting-textarea {
+	height: 15rem;
+	max-height: 15rem;
+}
+
+.wysiwyg-parent {
+	display: block;
+	background-color: var(--header-background);
+	width: fit-content;
+	margin-top: 0;
+	margin-bottom: .5rem;
+	padding: .25rem .5rem;
+	text-align: left;
+}
+
+.wysiwyg [data-level="1"] {
+	margin-left: .5rem;
+}
+.wysiwyg [data-level="2"] {
+	margin-left: 1rem;
+}
+.wysiwyg [data-level="3"] {
+	margin-left: 1.5rem;
+}
+.wysiwyg [data-level="4"] {
+	margin-left: 2rem;
+}
+
+.wysiwyg-button-bar {
+	background: var(--header-background);
+
+	color: var(--black);
+	padding: .25rem .5rem;
+	height: 2rem;
+	font-size: 1rem;
+	border: solid 1px var(--black);
+	border-top-left-radius: .25rem;
+	border-top-right-radius: .25rem;
+}
+
+.wysiwyg-instructions p {
+	font-size: .9rem;
+	margin-top: .5rem;
+	margin-bottom: 0;
+}
+
+.wysiwyg .highlighting-textarea {
+	caret-color: var(--white);
+
+}
 .highlighting {
 	background: var(--black);
 	color: #ff0000;
 	overflow: hidden;
 	z-index: 0;
+}
+
+.wysiwyg .highlighting {
+	background: transparent;
+	color: var(--white);
 }
 
 .highlighting-textarea {
@@ -375,6 +486,50 @@ main .proceed button {
 
 .highlighting .hljs-string {
 	color: var(--white);
+}
+
+.highlighting .highlight-tag {
+	color: var(--green);
+}
+
+.wysiwyg .highlighting .highlight-tag {
+	text-decoration: underline dotted;
+}
+
+.highlighting .highlight-punctuation {
+	color: var(--header-background);
+}
+
+.highlighting .highlight-key {
+	color: var(--yellow);
+}
+
+.highlighting .highlight-text {
+	color: var(--white);
+}
+
+.highlighting .highlight-bracket {
+	color: var(--header-background);
+}
+
+.wysiwyg-tag-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .5rem;
+}
+
+.wysiwyg-tag-buttons button {
+	width: initial;
+	margin-top: 0;
+	padding: .25rem .5rem;
+	font-size: 1rem;
+}
+
+.wysiwyg-tag-buttons .new-rule-button {
+	background: var(--white);
+	color: #aa0000;
+	border: solid 1px #aa0000;
+	text-decoration: underline;
 }
 
 .form-instructions {
