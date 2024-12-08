@@ -1,10 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
-import hljs from 'highlight.js/lib/core';
-import jsonHighlight from 'highlight.js/lib/languages/json';
 import makeJsonPretty from "../utils/makeJsonPretty";
 
 const TraceryWysiwygEditor = (props : { script : string, updateScript : (script : string) => void, origin : string }) => {
-	hljs.registerLanguage('json', jsonHighlight);
 
 	const [tree, setTree] = useState([ props.origin ] as string[]);
 	const currentNode = tree.length ? tree[tree.length - 1] : '';
