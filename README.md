@@ -31,6 +31,7 @@ CREATE TABLE `bbdq` (
   `language` varchar(2) NOT NULL DEFAULT 'en',
   `lastPost` datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   `lastPostText` text DEFAULT NULL,
+  `n_value` int(10) NOT NULL DEFAULT 0,
   `lastNotification` varchar(32) NOT NULL DEFAULT '',
   `minutesBetweenPosts` int(10) DEFAULT NULL,
   `msg` varchar(255) DEFAULT NULL,

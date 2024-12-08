@@ -149,7 +149,7 @@ const defaultCode = `{
 		<main className="main-content">
 			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <Link to="/">click here</Link>.</p>}
 			<section className="settings-heading">
-			<h2>Settings for {botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"}</h2>
+			<h2>Settings for {botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"}</h2>
 			<p><button className="link" onClick={() => logOut('/login')}>Log out ...</button></p>
 			</section>
 			<section className="tracery-input">
@@ -172,7 +172,7 @@ const defaultCode = `{
 					<h3>Main Tracery rule (the one used when your bot is posting)</h3>
 					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 					<h3>Post preview</h3>
-				<Preview text={previewText} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
+				<Preview text={previewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
 				<p className="back"><button onClick={() => setPreviewText(grammar?.flatten(`#${origin}#`) || '')}>Reroll...</button></p>
 				</section>
 				<section className="trace">
@@ -180,7 +180,7 @@ const defaultCode = `{
 					<select value={reply} onChange={(ev) => setReply(ev.target.value)}><option key="none" value="">Do not post replies</option>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 					{reply ? <>
 						<h3>Reply preview</h3>
-						<Preview text={replyPreviewText} handle={botSettings?.identifier || loginDetails?.identifier || "demobot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
+						<Preview text={replyPreviewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
 						<p className="back"><button onClick={() => setReplyPreviewText(grammar?.flatten(`#${reply}#`) || '')}>Reroll...</button></p>
 					</> : null}
 					</section>

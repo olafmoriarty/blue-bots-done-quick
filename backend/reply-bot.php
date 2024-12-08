@@ -8,8 +8,8 @@ include('secrets.php');
 // Get fetch function
 include('functions.php');
 
-// Get Tracery parser
-include('tracery-parser.php');
+// Get generate_post function
+include('generate.php');
 
 // Connect to MySQL
 $conn = mysqli_connect(
@@ -38,7 +38,7 @@ function check_replies() {
 	$stmt->close();
 
 	// Get all active bots that should reply
-	$query = 'SELECT identifier, id, provider, script, reply, actionIfLong, language, lastNotification FROM bbdq WHERE active = 1 AND reply != ""';
+	$query = 'SELECT identifier, id, provider, script, reply, actionIfLong, language, lastNotification, n_value FROM bbdq WHERE active = 1 AND reply != ""';
 	if ($letter) {
 		$query .= ' AND SUBSTRING(did, 9, 1) = ?';
 	}
@@ -57,7 +57,6 @@ function check_replies() {
 
 	// For each bot
 	while ($row = $result->fetch_assoc()) {
-		$tracery = new Tracery;
 		$tracery_code = json_decode($row['script'], true);
 		
 		if (!$tracery_code || !is_array($tracery_code) || !isset($tracery_code[$row['reply']])) {
@@ -102,9 +101,10 @@ function check_replies() {
 		$notification_count = count($notifications);
 		for ($i = 0; $i < $notification_count; $i++) {
 			$notif = $notifications[$i];
-			if ($notif['indexedAt'] <= $row['lastNotification']) {
+				if ($notif['indexedAt'] <= $row['lastNotification']) {
 				continue;
 			}
+
 			$new_reply = 0;
 			if ($notif['reason'] === 'reply') {
 				$parent = [
@@ -132,8 +132,6 @@ function check_replies() {
 				];
 			}
 			if (is_array($new_reply)) {
-				$author_did = $notif['author']['did'];
-
 				// Check that author is NOT another bot
 				$query = 'SELECT COUNT(id) AS botcount FROM bbdq WHERE did = ?';
 				$stmt = $conn->prepare($query);
@@ -141,7 +139,6 @@ function check_replies() {
 				$stmt->execute();
 				$botcount = $stmt->get_result();
 				$stmt->close();
-
 				$botcountrow = $botcount->fetch_assoc();
 				if (!$botcountrow['botcount']) {
 					$replies[] = $new_reply;
@@ -161,26 +158,24 @@ function check_replies() {
 		}
 		if (count($replies) > 0) {
 			// There are new messages to reply to
-			$grammar = $tracery->createGrammar($tracery_code);
-			$grammar->addModifiers($tracery->baseEngModifiers());
 	
+			$n = $row['n_value'];
 			foreach ($replies as $reply) {
+				$generated = generate_post($row['script'], $row['reply'], $row['actionIfLong'] ? 0 : $post_length, $n);
+
 				$text = '';
-				$possible_tags = ['img', 'svg', 'alt'];
-				$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
-				
-				for ($i = 0; $i < 10; $i++) {
-					$generated_text = $grammar->flatten('#' . $row['reply'] . '#');
-					if (strlen(preg_replace( $regex, '', $generated_text )) <= $post_length || $row['actionIfLong'] == 1) {
-						$text = $generated_text;
-						break;
-					}
+				if (isset($generated) && $generated && isset($generated['text'])) {
+					$text = $generated['text'];
 				}
+		
 				if (!$text) {
 					// Couldn't generate string shorter than 300 characters
 					continue;
 				}
 
+				if ($generated['increase_n']) {
+					$n++;
+				}
 				// Post thread
 				post_bsky_thread($text, $session, [
 					'provider' => $provider,
@@ -189,6 +184,13 @@ function check_replies() {
 					'root' => $reply['root'],
 				]);
 
+			}
+			if ($n > $row['n_value']) {
+				$query = 'UPDATE bbdq SET n_value = ? WHERE id = ?';
+				$stmt = $conn->prepare($query);
+				$stmt->bind_param('ii', $n, $row['id']);
+				$stmt->execute();
+				$stmt->close();
 			}
 		}
 
