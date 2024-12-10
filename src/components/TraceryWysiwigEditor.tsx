@@ -135,8 +135,8 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 					const position = Math.floor((ev.currentTarget.selectionStart + ev.currentTarget.selectionEnd) / 2);
 					for (let i = 0; i < sections.length; i++) {
 						if (sections[i].end > position) {
-							if (sections[i].type === 'tag') {
-								addToTree(sections[i].content.substring(1, sections[i].content.length - 1));
+							if (sections[i].type === 'tag' && !sections[i].content.includes('{')) {
+								addToTree(sections[i].content.split('.')[0].substring(1, sections[i].content.length - 1));
 							}
 							break;
 						}
@@ -150,13 +150,68 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 
 const TagButtons = (props : {sections : Section[], existingRules : string[], addToTree : (rule : string) => void, level : number}) => {
 	const {sections} = props;
-	const allTags = sections
+	let tags = sections
 		.filter((el) => el.type === 'tag')
 		.map((el) => el.content.substring(1, el.content.length - 1))
 		.map(el => el.split('.')[0]);
-	const uniqueTags = allTags.filter((el, index) => allTags.indexOf(el) === index);
+	tags = tags.filter((el, index) => tags.indexOf(el) === index);
+
+	let allTags = [] as string[];
+	tags.forEach(tag => {
+		if (!tag.includes('{')) {
+			allTags.push(tag);
+			return;
+		}
+
+		// Get all {} from tag
+		const bracketFunctions = /\{([^}]+)\}/g;
+		const matches = [...tag.matchAll(bracketFunctions)];
+		if (!matches || !matches.length) {
+			allTags.push(tag);
+			return;
+		}
+		const uniqueMatches = matches.filter((el, index) => index === matches.map((el2) => el2[1]).indexOf(el[1])).map(match => match[1]);
+		console.log(uniqueMatches);
+
+		let newTags = [ tag ];
+
+		const replaceValues = {
+			'hour': ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
+			'weekday' : ['0', '1', '2', '3', '4', '5', '6'],
+			'weekdayName' : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+			'month' : ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
+			'monthName' : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+		} as {[key : string] : string[]};
+		for (let i = 0; i < uniqueMatches.length; i++) {
+			const oldTags = [ ...newTags ];
+			newTags = [];
+			for (let j = 0; j < oldTags.length; j++) {
+				if (uniqueMatches[i] in replaceValues) {
+					for (let k = 0; k < replaceValues[uniqueMatches[i]].length; k++) {
+						newTags.push(oldTags[j].replaceAll(`{${uniqueMatches[i]}}`, replaceValues[uniqueMatches[i]][k]));
+					}
+				}
+				else if (uniqueMatches[i].match(/n (?:mod|\%) (\d+)?/)) {
+					const nmodx = uniqueMatches[i].match(/n (?:mod|\%) (\d+)?/);
+					const modValue = nmodx ? Number(nmodx[1]) : 0;
+					for (let k = 0; k < modValue; k++) {
+						if (nmodx && nmodx[1]) {
+							newTags.push(oldTags[j].replaceAll(`{n mod ${nmodx[1]}}`, k.toString()).replaceAll(`{n % ${nmodx[1]}}`, k.toString()));
+
+						}
+					}
+				}
+				else {
+					newTags = [ ...oldTags ];
+				}
+			}
+		}
+
+		allTags.push( ...newTags );
+	})
+
 	return (
-		<div className="wysiwyg-tag-buttons" data-level={props.level}>{uniqueTags.map((el, index) => <button key={index} className={props.existingRules.includes(el) ? '' : "new-rule-button"} onClick={() => props.addToTree(el)}>{el}</button>)}</div>
+		<div className="wysiwyg-tag-buttons" data-level={props.level}>{allTags.map((el, index) => <button key={index} className={props.existingRules.includes(el) ? '' : "new-rule-button"} onClick={() => props.addToTree(el)}>{el}</button>)}</div>
  	)
 }
 

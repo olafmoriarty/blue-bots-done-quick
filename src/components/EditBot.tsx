@@ -9,6 +9,7 @@ import Preview from './Preview';
 import { Link, useNavigate } from 'react-router-dom';
 import HighlightedTextarea from './HighlightedTextarea';
 import TraceryWysiwygEditor from './TraceryWysiwigEditor';
+import phpdate from '../utils/phpdate';
 
 function EditBot(props : {demo? : boolean}) {
 
@@ -88,14 +89,57 @@ const defaultCode = `{
 		}
 
 		try {
-			const grammar = tracery.createGrammar(JSON.parse(text));
+
+			let updatedValues = JSON.parse(text);
+
+			Object.keys(updatedValues).forEach((rule) => updatedValues[rule] = typeof updatedValues[rule] === 'string' ? preprocessDates(updatedValues[rule]) : updatedValues[rule].map((el : string) => preprocessDates(el)));
+			Object.keys(updatedValues).forEach((rule) => updatedValues[rule] = typeof updatedValues[rule] === 'string' ? preprocessItems(updatedValues[rule], updatedValues) : updatedValues[rule].map((el : string) => preprocessItems(el, updatedValues)));
+
+			const grammar = tracery.createGrammar(updatedValues);
 			grammar.addModifiers(tracery.baseEngModifiers);
 			setGrammar( grammar );
 			setParsingError(false);
 		}
-		catch {
+		catch (e) {
+			console.log(e);
 			setParsingError(true);
 		}
+	}
+
+	const dateReplacer = (dateString : string, date : string) => {
+		if (!dateString) {
+			return '';
+		}
+		return phpdate(date);
+	}
+
+	const preprocessDates = (text : string) => {
+		let newText = text;
+		const d = new Date();
+		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+		newText = newText.replaceAll('{hour}', d.getHours().toString());
+		newText = newText.replaceAll('{month}', d.getHours().toString() + 1);
+		newText = newText.replaceAll('{monthName}', months[d.getHours()]);
+		newText = newText.replaceAll('{weekday}', d.getDay().toString());
+		newText = newText.replaceAll('{monthName}', days[d.getDay()]);
+		newText = newText.replace(/\{date ([^}]+)\}/g, dateReplacer);
+		newText = newText.replaceAll(/\{n(?: (?:mod|\%) (\d+))?\}/g, '0');
+		return newText;
+	}
+
+	const preprocessItems = (text : string, rules : { [key : string]: string|string[] }) => {
+		let newText = text;
+		newText = newText.replaceAll(/\{item #([^ \}]+)# (\d+|\\\[date\\\])\}/g, (ignoreThis, rule, number) => {
+			if (!ignoreThis) {
+				return '';
+			}
+			if (!rules[rule]) {
+				return '';
+			}
+			return rules[rule][(number === '\\[date\\]' ? 0 : Number(number)) % rules[rule].length]
+		});
+		return newText;
 	}
 
 	if (!loginDetails || !botSettings) {
