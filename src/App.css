@@ -331,6 +331,7 @@ main .proceed button {
 	display: flex;
 	gap: .5rem;
 	margin-left: 1rem;
+	position: relative;
 }
 
 .tracery-mode-tags button {
@@ -348,12 +349,59 @@ main .proceed button {
 	background: var(--black);
 }
 
+.tracery-mode-tags button.cog-button {
+	border: none;
+	background: transparent;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
 .tracery-mode-tags button.wysiwyg-button.button-not-active {
 	color: #aa0000;
 }
 
 .tracery-mode-tags button.active {
 	border-bottom: none;
+}
+
+.tracery-mode-tags .mode-settings {
+	background: var(--white);
+	position: absolute;
+	top: 1.5rem;
+	right: .25rem;
+	z-index: 30;
+	border: solid 1px var(--black);
+	box-shadow: .25rem .25rem .25rem var(--black);
+	
+}
+
+.tracery-mode-tags .mode-settings article, .tracery-mode-tags .mode-settings h4 {
+	margin: 0;
+	padding: .25rem .5rem;
+}
+
+.tracery-mode-tags .mode-settings h4 {
+	background: var(--header-background);
+	font-size: 1rem;
+	border-bottom: solid 1px var(--black);
+}
+
+.tracery-mode-tags .mode-settings h4:not(:first-child) {
+	border-top: solid 1px var(--black);
+	margin-top: 1rem;
+}
+
+.tracery-mode-tags .mode-settings input[type=radio] {
+	margin-right: .5rem;
+}
+
+.tracery-mode-tags .mode-settings label {
+	display: block;
+}
+
+.tracery-mode-tags .mode-settings article:has(input:checked) {
+	background: var(--yellow);
 }
 
 .highlighting-container {
@@ -463,6 +511,9 @@ main .proceed button {
 	overflow: hidden;
 	z-index: 0;
 }
+.do-not-highlight .highlighting {
+	color: var(--white);
+}
 
 .wysiwyg .highlighting {
 	background: transparent;
@@ -475,6 +526,11 @@ main .proceed button {
 	caret-color: var(--green);
 	z-index: 1;
 	resize: none;
+}
+
+.do-not-highlight .highlighting-textarea {
+	color: var(--white);
+	background-color: var(--black);
 }
 
 .highlighting .hljs-punctuation {

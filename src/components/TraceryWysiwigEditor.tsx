@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import makeJsonPretty from "../utils/makeJsonPretty";
 
-const TraceryWysiwygEditor = (props : { script : string, updateScript : (script : string) => void, origin : string }) => {
+const TraceryWysiwygEditor = (props : { script : string, updateScript : (script : string) => void, origin : string, highlighting : boolean, separator : string }) => {
 
 	const [tree, setTree] = useState([ props.origin ] as string[]);
 	const currentNode = tree.length ? tree[tree.length - 1] : '';
-	const {script, updateScript} = props;
+	const {script, updateScript, highlighting, separator} = props;
 	const [sections, setSections] = useState([] as Section[]);
 
 	const [text, setText] = useState('');
@@ -19,10 +19,22 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 					newText = '';
 				}
 				else if (Array.isArray(scriptObject[currentNode])) {
-					newText = scriptObject[currentNode].map((el : string) => el.replaceAll("\n", "\\n")).join("\n");
+					let arr = scriptObject[currentNode];
+					if (separator === "\n") {
+						arr = arr.map((el : string) => el.replaceAll("\n", "\\n"));
+					}
+					else if (separator === "\n\n") {
+						arr = arr.map((el : string) => el.replaceAll("\n", "\\n").replaceAll("\\n\\n", "\\n\n"));
+					}
+					newText = arr.join(separator);
 				}
 				else {
-					newText = scriptObject[currentNode].replaceAll("\n", "\\n");
+					if (separator === "\n") {
+						newText = newText.replaceAll("\n", "\\n");
+					}
+					else if (separator === "\n\n") {
+						newText = newText.replaceAll("\n", "\\n").replaceAll("\\n\\n", "\\n\n");
+					}
 				}
 			}
 		}
@@ -33,7 +45,7 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 		const newSections = getTracerySections(newText.charAt(newText.length - 1) === "\n" ? newText + " " : newText);
 		setSections(newSections);
 
-	}, [currentNode]);
+	}, [currentNode, origin, separator]);
 
 	useEffect(() => {
 		setTree([ props.origin])
@@ -45,7 +57,7 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 			text = inputText;
 			setText(text);
 			let newScript = { ...JSON.parse(script) };
-			newScript[currentNode] = inputText.split("\n").map(el => el.replace(/\\n/g, "\n")).filter(el => el !== '');
+			newScript[currentNode] = inputText.split(separator).map(el => separator.includes("\n") ? el.replace(/\\n/g, "\n") : el).filter(el => el !== '');
 			updateScript( makeJsonPretty(JSON.stringify(newScript)) );
 			const newSections = getTracerySections(text);
 			setSections(newSections);
@@ -129,8 +141,8 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 			<div className="wysiwyg-button-bar" data-level={Math.min(tree.length - 1, 4)}>
 					<div className="rule-name">{tree[tree.length - 1]}</div>
 				</div>
-			<div className="highlighting-container" data-level={Math.min(tree.length - 1, 4)}>
-				<pre ref={highlightingRef} className="tracery-script highlighting" aria-hidden><code>{sections.map((el, index) => el.type === "tag" ? <span key={index} className="highlight-tag">{el.content}</span> : <Fragment key={index}>{el.content}</Fragment>)}</code></pre>
+			<div className={`highlighting-container ${highlighting ? '' : 'do-not-highlight'}`} data-level={Math.min(tree.length - 1, 4)}>
+				<pre ref={highlightingRef} className="tracery-script highlighting" aria-hidden><code>{!highlighting ? text : sections.map((el, index) => el.type === "tag" ? <span key={index} className="highlight-tag">{el.content}</span> : <Fragment key={index}>{el.content}</Fragment>)}</code></pre>
 				<textarea ref={textareaRef} key={tree[tree.length - 1]} className="highlighting-textarea" spellCheck={false} value={text} onChange={(ev) => updateText(ev.target.value)} onInput={() => syncScroll()} onScroll={syncScroll} onDoubleClick={(ev) => {
 					const position = Math.floor((ev.currentTarget.selectionStart + ev.currentTarget.selectionEnd) / 2);
 					for (let i = 0; i < sections.length; i++) {

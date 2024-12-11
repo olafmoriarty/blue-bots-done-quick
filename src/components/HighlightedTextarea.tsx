@@ -1,9 +1,8 @@
 import { useRef } from "react";
 import highlightJson from "../utils/highlightJson";
 
-const HighlightedTextarea = (props : { script : string, updateScript : (script : string) => void }) => {
-
-	const {script, updateScript} = props;
+const HighlightedTextarea = (props : { script : string, updateScript : (script : string) => void, highlighting : boolean }) => {
+	const {script, updateScript, highlighting} = props;
 
 	const highlightingRef = useRef(null as null|HTMLPreElement);
 	const textareaRef = useRef(null as null|HTMLTextAreaElement);
@@ -21,8 +20,8 @@ const HighlightedTextarea = (props : { script : string, updateScript : (script :
 	}
 
 	return (
-		<div className="highlighting-container json-textarea">
-		<pre ref={highlightingRef} className="tracery-script highlighting" aria-hidden><code>{highlightJson(script)}</code></pre>
+		<div className={`highlighting-container json-textarea ${highlighting ? '' : 'do-not-highlight'}`}>
+		<pre ref={highlightingRef} className="tracery-script highlighting" aria-hidden><code>{!highlighting ? script : highlightJson(script)}</code></pre>
 		<textarea ref={textareaRef} className="highlighting-textarea" spellCheck={false} value={script} onChange={(ev) => updateScript(ev.target.value)} onInput={() => syncScroll()} onScroll={syncScroll} />
 		</div>
 	);

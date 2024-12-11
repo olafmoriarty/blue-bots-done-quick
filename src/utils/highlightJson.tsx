@@ -67,7 +67,7 @@ const highlightJson = (inputText : string) => {
 					start = i + 1;
 				}
 			}
-			if (char === '"') {
+			if (char === '"' || char === "\n") {
 				inString = false;
 				foundSections.push({
 					type: stringIsKey ? 'key' : 'text',

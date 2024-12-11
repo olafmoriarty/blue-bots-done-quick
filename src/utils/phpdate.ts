@@ -1,5 +1,4 @@
 const phpdate = (datestring : string) => {
-	console.log(datestring);
 	let newString = '';
 	const date = new Date();
 
@@ -77,7 +76,6 @@ const phpdate = (datestring : string) => {
 			// How many days between this week's Thursday and the first Thursday of the year?
 			const dateOfJan1st = new Date(date.getUTCFullYear(), 0, 1);
 			const thursdayWeekOne = new Date(date.getUTCFullYear(), 0, 1 + ((4 - dateOfJan1st.getDay()) % 7));
-			console.log(thursdayWeekOne);
 
 			const weekNumber = 1 + Math.round((dateOfThursday.getTime() - thursdayWeekOne.getTime()) / (1000 * 60 * 60 * 24 * 7));
 			newString += weekNumber.toString();

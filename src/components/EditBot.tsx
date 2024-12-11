@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import tracery from 'tracery-grammar';
 
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
+
 import { usePage } from "../context/PageContext";
 import ErrorMessage from './ErrorMessage';
 import DeleteBot from './DeleteBot';
@@ -10,6 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import HighlightedTextarea from './HighlightedTextarea';
 import TraceryWysiwygEditor from './TraceryWysiwigEditor';
 import phpdate from '../utils/phpdate';
+
 
 function EditBot(props : {demo? : boolean}) {
 
@@ -49,12 +53,26 @@ const defaultCode = `{
 	const [showDeleteForm, setShowDeleteForm] = useState(false);
 
 	const [editorMode, setEditorMode] = useState('wysiwyg' as 'wysiwyg'|'json');
+	const [showEditorSettings, setShowEditorSettings] = useState(false);
+	const [syntaxHighlighting, setSyntaxHighlighting] = useState(false);
+	const [separator, setSeparator] = useState("\n");
 
 	// Get editor mode from localStorage
 	useEffect(() => {
 		const storedEditorMode = localStorage.getItem('editorMode');
 		if (storedEditorMode && (storedEditorMode === 'wysiwyg' || storedEditorMode === 'json')) {
 			setEditorMode(storedEditorMode);
+		}
+		const storedHighlightingMode = localStorage.getItem('syntaxHighlighting');
+		if (storedHighlightingMode && (storedHighlightingMode === '0')) {
+			setSyntaxHighlighting(false);
+		}
+		else {
+			setSyntaxHighlighting(true);
+		}
+		const storedSeparator = localStorage.getItem('separator');
+		if (storedSeparator) {
+			setSeparator(storedSeparator);
 		}
 	}, []);
 
@@ -79,6 +97,16 @@ const defaultCode = `{
 	const changeEditorMode = (mode : 'wysiwyg'|'json') => {
 		setEditorMode(mode);
 		localStorage.setItem('editorMode', mode);
+	}
+
+	const changeSyntaxHighlighting = (mode : boolean) => {
+		setSyntaxHighlighting(mode);
+		localStorage.setItem('syntaxHighlighting', mode ? '1' : '0');
+	}
+
+	const changeSeparator = (newSeparator : string) => {
+		setSeparator(newSeparator);
+		localStorage.setItem('separator', newSeparator);
 	}
 
 	const updateScript = (inputText? : string) => {
@@ -201,11 +229,24 @@ const defaultCode = `{
 				<div className="tracery-mode-tags">
 					<button className={`wysiwyg-button ${parsingError ? 'button-not-active' : ''} ${editorMode === 'wysiwyg' ? 'active' : ''}`} onClick={!parsingError ? () => changeEditorMode('wysiwyg') : undefined}>Editor view</button>
 					<button className={`json-button ${editorMode === 'json' ? 'active' : ''}`} onClick={() => changeEditorMode('json')}>JSON view</button>
+					<button className="cog-button" onClick={() => setShowEditorSettings(oldValue => !oldValue)}><Icon icon={faCog} /></button>
+					{showEditorSettings ? <div className="mode-settings">
+						<h4>Mode</h4>
+						<article><label><input type="radio" name="editor-mode" checked={editorMode === 'wysiwyg' ? true : false} onChange={!parsingError ? () => changeEditorMode('wysiwyg') : undefined} /> Editor view</label></article>
+						<article><label><input type="radio" name="editor-mode" checked={editorMode === 'json' ? true : false}  onChange={() => changeEditorMode('json')} /> JSON view</label></article>
+						<h4>Syntax highlighting</h4>
+						<article><label><input type="radio" name="syntax-highlighting" checked={syntaxHighlighting} onChange={() => changeSyntaxHighlighting(true)} /> On</label></article>
+						<article><label><input type="radio" name="syntax-highlighting" checked={!syntaxHighlighting} onChange={() => changeSyntaxHighlighting(false)} /> Off</label></article>
+						<h4>Separator (editor view)</h4>
+						<article><label><input type="radio" name="editor-separator" checked={separator === "\n"} onChange={() => changeSeparator("\n")} /> Newline</label></article>
+						<article><label><input type="radio" name="editor-separator" checked={separator === "\n\n"} onChange={() => changeSeparator("\n\n")} /> Double newline</label></article>
+						<article><label><input type="radio" name="editor-separator" checked={separator === '{{SEPARATOR}}'} onChange={() => changeSeparator('{{SEPARATOR}}')} /> {"{{SEPARATOR}}"}</label></article>
+					</div> : null}
 				</div>
 				{editorMode === 'wysiwyg' ? 
-					<TraceryWysiwygEditor script={script} updateScript={updateScript} origin={origin} /> 
+					<TraceryWysiwygEditor script={script} updateScript={updateScript} origin={origin} highlighting={syntaxHighlighting} separator={separator} /> 
 				: 
-					<HighlightedTextarea script={script} updateScript={updateScript} />
+					<HighlightedTextarea script={script} updateScript={updateScript} highlighting={syntaxHighlighting} />
 				}
 				
 				
