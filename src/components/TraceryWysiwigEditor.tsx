@@ -24,7 +24,7 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 						arr = arr.map((el : string) => el.replaceAll("\n", "\\n"));
 					}
 					else if (separator === "\n\n") {
-						arr = arr.map((el : string) => el.replaceAll("\n", "\\n").replaceAll("\\n\\n", "\\n\n"));
+						arr = arr.map((el : string) => el.replaceAll("\n", "\\n").replaceAll("\\n\\n", "\\n\n").replace(/\n$/, "\\n"));
 					}
 					newText = arr.join(separator);
 				}
@@ -33,7 +33,7 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 						newText = newText.replaceAll("\n", "\\n");
 					}
 					else if (separator === "\n\n") {
-						newText = newText.replaceAll("\n", "\\n").replaceAll("\\n\\n", "\\n\n");
+						newText = newText.replaceAll("\n", "\\n").replaceAll("\\n\\n", "\\n\n").replace(/\n$/, "\\n");
 					}
 				}
 			}

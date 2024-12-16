@@ -367,6 +367,7 @@ main .proceed button {
 
 .tracery-mode-tags .mode-settings {
 	background: var(--white);
+	min-width: 15rem;
 	position: absolute;
 	top: 1.5rem;
 	right: .25rem;
@@ -403,6 +404,25 @@ main .proceed button {
 .tracery-mode-tags .mode-settings article:has(input:checked) {
 	background: var(--yellow);
 }
+
+.help-highlighting {
+	width: 100%;
+	display: block;
+	font-family: monospace;
+	font-weight: bold;
+	font-size: .8rem;
+	line-height: 1rem;
+	padding: .5rem;
+	tab-size: 4;
+	border: none;
+	overflow: auto;
+	white-space: pre-wrap;
+	scrollbar-gutter: stable;
+	background: var(--black);
+	color: var(--white);
+
+}
+
 
 .highlighting-container {
 	position: relative;

@@ -237,10 +237,11 @@ const defaultCode = `{
 						<h4>Syntax highlighting</h4>
 						<article><label><input type="radio" name="syntax-highlighting" checked={syntaxHighlighting} onChange={() => changeSyntaxHighlighting(true)} /> On</label></article>
 						<article><label><input type="radio" name="syntax-highlighting" checked={!syntaxHighlighting} onChange={() => changeSyntaxHighlighting(false)} /> Off</label></article>
-						<h4>Separator (editor view)</h4>
+						{editorMode === 'wysiwyg' ? <>
+						<h4>Separator</h4>
 						<article><label><input type="radio" name="editor-separator" checked={separator === "\n"} onChange={() => changeSeparator("\n")} /> Newline</label></article>
 						<article><label><input type="radio" name="editor-separator" checked={separator === "\n\n"} onChange={() => changeSeparator("\n\n")} /> Double newline</label></article>
-						<article><label><input type="radio" name="editor-separator" checked={separator === '{{SEPARATOR}}'} onChange={() => changeSeparator('{{SEPARATOR}}')} /> {"{{SEPARATOR}}"}</label></article>
+						<article><label><input type="radio" name="editor-separator" checked={separator === '{{SEPARATOR}}'} onChange={() => changeSeparator('{{SEPARATOR}}')} /> {"{{SEPARATOR}}"}</label></article></> : null}
 					</div> : null}
 				</div>
 				{editorMode === 'wysiwyg' ? 
