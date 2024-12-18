@@ -405,6 +405,16 @@ main .proceed button {
 	background: var(--yellow);
 }
 
+.help {
+	background: rgba(255, 255, 255, .5);
+	border-radius: .5rem;
+}
+
+.help h2 {
+	font-size: 3rem;
+	margin-top: 0;
+}
+
 .help-highlighting {
 	width: 100%;
 	display: block;
@@ -420,7 +430,7 @@ main .proceed button {
 	scrollbar-gutter: stable;
 	background: var(--black);
 	color: var(--white);
-
+	margin-bottom: 1rem;
 }
 
 
@@ -564,7 +574,7 @@ main .proceed button {
 	color: var(--white);
 }
 
-.highlighting .highlight-tag {
+.highlighting .highlight-tag, .help-highlighting .highlight-tag {
 	color: var(--green);
 }
 
@@ -576,7 +586,7 @@ main .proceed button {
 	color: var(--header-background);
 }
 
-.highlighting .highlight-key {
+.highlighting .highlight-key, .help-highlighting .highlight-key {
 	color: var(--yellow);
 }
 
@@ -883,6 +893,11 @@ footer {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-end;
+}
+
+body:has(main.help) footer {
+	border-top: none;
+	margin-top: 0;
 }
 
 footer p {
