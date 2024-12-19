@@ -109,7 +109,8 @@ function post_bsky_thread($text, $session, $options = []) {
 	$provider = empty($options['provider']) ? 'https://bsky.social' : $options['provider'];
 
 	$blobs = [];
-	$possible_tags = ['img', 'svg', 'alt'];
+	$labels = [];
+	$possible_tags = ['img', 'svg', 'alt', 'label'];
 	// This regex doesn't work in PHP for strings longer than about 8200 characters??
 //	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
 	// This one does, but does not allow you to escape } characters. Still, better than the alternative?
@@ -211,6 +212,9 @@ function post_bsky_thread($text, $session, $options = []) {
 			$blobs[$number_of_blobs - 1]['alt'] = $tag[2];
 
 		}
+		if ($tag[1] === 'label') {
+			$labels[] = $tag[2];
+		}
 	}
 
 	// Split text in 300 character chunks
@@ -291,6 +295,17 @@ function post_bsky_thread($text, $session, $options = []) {
 				'$type' => 'app.bsky.embed.images',
 				'images' => $images, 
 			];
+
+			if (count($labels)) {
+				$label_values = [];
+				foreach ($labels as $label) {
+					$label_values[] = [ "val" => $label ];
+				}
+				$record['labels'] = [
+					'$type' => 'com.atproto.label.defs#selfLabels',
+					'values' => $label_values,
+				];
+			}
 		}
 
 		// Post to Bluesky
