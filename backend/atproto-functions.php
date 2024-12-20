@@ -110,6 +110,7 @@ function post_bsky_thread($text, $session, $options = []) {
 
 	$blobs = [];
 	$labels = [];
+	$languages = [];
 	$possible_tags = ['img', 'svg', 'alt', 'label', 'lang'];
 	// This regex doesn't work in PHP for strings longer than about 8200 characters??
 //	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
@@ -212,8 +213,11 @@ function post_bsky_thread($text, $session, $options = []) {
 			$blobs[$number_of_blobs - 1]['alt'] = $tag[2];
 
 		}
-		if ($tag[1] === 'label') {
+		if ($tag[1] === 'label' && !in_array($tag[2], $labels)) {
 			$labels[] = $tag[2];
+		}
+		if ($tag[1] === 'lang' && !in_array($tag[2], $languages)) {
+			$languages[] = $tag[2];
 		}
 	}
 
@@ -253,7 +257,11 @@ function post_bsky_thread($text, $session, $options = []) {
 			'createdAt' => $timestamp,
 			'text' => $texts[$i],
 		];
-		if (isset($option['language']) && $option['language']) {
+
+		if (count($languages)) {
+			$record['langs'] = $languages;
+		}
+		elseif (isset($option['language']) && $option['language']) {
 			$record['langs'] = [ $option['language'] ];
 		}
 
