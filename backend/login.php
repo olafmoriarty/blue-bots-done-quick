@@ -39,7 +39,7 @@ if ($result->num_rows) {
 		$iv_hex = bin2hex($iv);
 		$encrypted_password = openssl_encrypt($body['password'], 'aes-256-cbc', $encryption_key, 0, $iv);
 
-		$query = 'UPDATE bbdq SET password = ?, iv = ? WHERE identifier = ? AND provider = ?';
+		$query = 'UPDATE bbdq SET password = ?, iv = ?, accessJwt = null, accessJwt_time = null, refreshJwt = null, refreshJwt_time = null WHERE identifier = ? AND provider = ?';
 		$stmt = $conn->prepare($query);
 		$stmt->bind_param('ssss', $encrypted_password, $iv_hex, $body['identifier'], $provider);
 		$stmt->execute();
