@@ -96,6 +96,10 @@ function detectFacets($text) {
 	preg_match_all(TAG_REGEX, $text, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 	foreach ($matches as $match) {
 		$leading = $match[1][0];
+
+		if (!isset($match[2])) {
+			continue;
+		}
 		$tag = $match[2][0];
 
 		if (!$tag) {

@@ -1,11 +1,12 @@
 import DOMPurify from 'dompurify';
 
 const Preview = (props : Props) => {
-	const stripImagesRegex = /\{(img|svg|alt)(?:[  ]([^}]*))?}/g;
+	const stripImagesRegex = /\{(img|svg|alt|label|lang)(?:[  ]([^}]*))?}/g;
 	const {text} = props;
 	const matches = [...text.matchAll(stripImagesRegex)];
 	let images = [] as JSX.Element[];
 	let alts = [] as string[];
+	let hasLabel = false;
 	matches.forEach((match, index) => {
 		if (match[1] === 'img') {
 			// Are there already four images in this post?
@@ -74,6 +75,9 @@ const Preview = (props : Props) => {
 
 		}
 
+		if (match[1] === 'label') {
+			hasLabel = true;
+		}
 	});
 
 	const LinkIfExists = (linkProps : {children : string|JSX.Element}) => {
@@ -93,7 +97,7 @@ const Preview = (props : Props) => {
 				</div>
 			</div>
 			{text.replace(stripImagesRegex, '')}
-			{images.length ? <div className="bluesky-post-images">
+			{images.length ? <div className={`bluesky-post-images ${hasLabel && props.link ? 'blurred-images' : null}`}>
 				{images}
 			</div> : null}
 			{props.showAlts && images.length ? 

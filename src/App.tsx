@@ -11,6 +11,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import BotList from './components/BotList';
 import Source from './components/Source';
+import Help from './help/Help';
 
 const App = () => {
 	const router = createBrowserRouter([
@@ -54,6 +55,14 @@ const App = () => {
 				{
 					path: 'login',
 					element: <LogIn />,
+				},
+				{
+					path: 'help/:page',
+					element: <Help />,
+				},
+				{
+					path: 'help',
+					element: <Help />,
 				},
 				{
 					path: 'privacy',
