@@ -48,7 +48,7 @@ function generate_post($script, $origin, $max_length = 0, $n_input = 0) {
 	$grammar->addModifiers($tracery->baseEngModifiers());
 
 	$text = '';
-	$possible_tags = ['img', 'svg', 'alt'];
+	$possible_tags = ['img', 'svg', 'alt', 'label', 'lang'];
 	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]([^}]*))?}/';
 	
 	for ($i = 0; $i < 10; $i++) {

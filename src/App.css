@@ -334,7 +334,7 @@ main .proceed button {
 	position: relative;
 }
 
-.tracery-mode-tags button {
+.tracery-mode-tags button, .tracery-mode-tags a {
 	width: initial;
 	background-color: var(--white);
 	font-size: .8rem;
@@ -355,6 +355,15 @@ main .proceed button {
 	position: absolute;
 	top: 0;
 	right: 0;
+}
+
+.tracery-mode-tags a.help-button {
+	display: block;
+	border: none;
+	background: transparent;
+	position: absolute;
+	top: 0;
+	right: 2rem;
 }
 
 .tracery-mode-tags button.wysiwyg-button.button-not-active {
@@ -413,6 +422,14 @@ main .proceed button {
 .help h2 {
 	font-size: 3rem;
 	margin-top: 0;
+}
+
+.help code {
+	background: var(--white);
+}
+
+.help .help-highlighting code, .help .highlighting code {
+	background: initial;
 }
 
 .help-highlighting {
@@ -582,7 +599,7 @@ main .proceed button {
 	text-decoration: underline dotted;
 }
 
-.highlighting .highlight-punctuation {
+.highlighting .highlight-punctuation, .help-highlighting .highlight-punctuation {
 	color: var(--header-background);
 }
 
@@ -590,11 +607,11 @@ main .proceed button {
 	color: var(--yellow);
 }
 
-.highlighting .highlight-text {
+.highlighting .highlight-text, .help-highlighting .highlight-text {
 	color: var(--white);
 }
 
-.highlighting .highlight-bracket {
+.highlighting .highlight-bracket, .help-highlighting .highlight-bracket {
 	color: var(--header-background);
 }
 
@@ -723,6 +740,10 @@ main .proceed button {
 	grid-template-columns: 1fr 1fr;
 	border-radius: .75rem;
 	overflow: hidden;
+}
+
+.blurred-images img {
+	filter:blur(2rem);
 }
 
 .bluesky-post-images img, .bluesly-post-images svg {

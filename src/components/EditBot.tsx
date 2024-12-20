@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import tracery from 'tracery-grammar';
 
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faCog } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 import { usePage } from "../context/PageContext";
 import ErrorMessage from './ErrorMessage';
@@ -150,7 +150,7 @@ const defaultCode = `{
 		newText = newText.replaceAll('{month}', d.getHours().toString() + 1);
 		newText = newText.replaceAll('{monthName}', months[d.getHours()]);
 		newText = newText.replaceAll('{weekday}', d.getDay().toString());
-		newText = newText.replaceAll('{monthName}', days[d.getDay()]);
+		newText = newText.replaceAll('{weekdayName}', days[d.getDay()]);
 		newText = newText.replace(/\{date ([^}]+)\}/g, dateReplacer);
 		newText = newText.replaceAll(/\{n(?: (?:mod|\%) (\d+))?\}/g, '0');
 		return newText;
@@ -229,6 +229,7 @@ const defaultCode = `{
 				<div className="tracery-mode-tags">
 					<button className={`wysiwyg-button ${parsingError ? 'button-not-active' : ''} ${editorMode === 'wysiwyg' ? 'active' : ''}`} onClick={!parsingError ? () => changeEditorMode('wysiwyg') : undefined}>Editor view</button>
 					<button className={`json-button ${editorMode === 'json' ? 'active' : ''}`} onClick={() => changeEditorMode('json')}>JSON view</button>
+					<a className="help-button" href="/help/" target="_blank"><Icon icon={faQuestionCircle} /></a>
 					<button className="cog-button" onClick={() => setShowEditorSettings(oldValue => !oldValue)}><Icon icon={faCog} /></button>
 					{showEditorSettings ? <div className="mode-settings">
 						<h4>Mode</h4>

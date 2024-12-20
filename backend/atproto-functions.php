@@ -110,7 +110,7 @@ function post_bsky_thread($text, $session, $options = []) {
 
 	$blobs = [];
 	$labels = [];
-	$possible_tags = ['img', 'svg', 'alt', 'label'];
+	$possible_tags = ['img', 'svg', 'alt', 'label', 'lang'];
 	// This regex doesn't work in PHP for strings longer than about 8200 characters??
 //	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]((?:[^}]|(?<=\\\\)})*))?}/';
 	// This one does, but does not allow you to escape } characters. Still, better than the alternative?

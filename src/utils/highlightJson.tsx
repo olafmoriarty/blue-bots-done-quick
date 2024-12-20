@@ -5,6 +5,7 @@ const highlightJson = (inputText : string) => {
 
 	let start = 0;
 	let depth = 0;
+	let funcDepth = 0;
 	let inTag = false;
 	let foundSections = [] as Section[];
 	let stringIsKey = false;
@@ -31,7 +32,7 @@ const highlightJson = (inputText : string) => {
 				if (!inTag) {
 					if (start < i) {
 						foundSections.push({
-							type: depth ? 'bracket' : 'text',
+							type: (depth || funcDepth) ? 'bracket' : 'text',
 							content: text.substring(start, i),
 						});
 						start = i;
@@ -48,9 +49,9 @@ const highlightJson = (inputText : string) => {
 				}
 			}
 			if (char === '[' && text.charAt(i - 1) !== '\\') {
-				if (!depth && start < i) {
+				if (!depth && !funcDepth && start < i) {
 					foundSections.push({
-						type: 'text',
+						type: inTag ? 'tag' : 'text',
 						content: text.substring(start, i),
 					});
 					start = i;
@@ -59,7 +60,7 @@ const highlightJson = (inputText : string) => {
 			}
 			if (char === ']' && text.charAt(i - 1) !== '\\') {
 				depth--;
-				if (!depth) {
+				if (!depth && !funcDepth) {
 					foundSections.push({
 						type: 'bracket',
 						content: text.substring(start, i + 1),
@@ -67,6 +68,28 @@ const highlightJson = (inputText : string) => {
 					start = i + 1;
 				}
 			}
+
+			if (char === '{') {
+				if (!funcDepth && !depth && start < i) {
+					foundSections.push({
+						type: inTag ? 'tag' : 'text',
+						content: text.substring(start, i),
+					});
+					start = i;
+				}
+				funcDepth++;
+			}
+			if (char === '}') {
+				funcDepth--;
+				if (!funcDepth && !depth) {
+					foundSections.push({
+						type: 'bracket',
+						content: text.substring(start, i + 1),
+					});
+					start = i + 1;
+				}
+			}
+
 			if (char === '"' || char === "\n") {
 				inString = false;
 				foundSections.push({
