@@ -132,6 +132,8 @@ function check_replies() {
 				];
 			}
 			if (is_array($new_reply)) {
+				$author_did = $notif['author']['did'];
+
 				// Check that author is NOT another bot
 				$query = 'SELECT COUNT(id) AS botcount FROM bbdq WHERE did = ?';
 				$stmt = $conn->prepare($query);
