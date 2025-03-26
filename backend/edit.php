@@ -95,4 +95,58 @@ if (count($fields_to_update)) {
 	$stmt->close();
 }
 
+// Post now
+if (isset($body['postNow']) && $body['postNow']) {
+	// Get generate_post function
+	include('generate.php');
+
+	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE identifier = ? and provider = ?';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('ss', $body['identifier'], $provider);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+
+	if (!$result->num_rows) {
+		return_json([]);
+	}
+
+	$posting_row = $result->fetch_assoc();
+
+	$post_length = 300;
+	$generated = generate_post($posting_row['script'], $posting_row['msg'], $posting_row['actionIfLong'] ? 0 : $post_length, $posting_row['n_value']);
+
+	$text = '';
+	if (isset($generated) && $generated && isset($generated['text'])) {
+		$text = $generated['text'];
+	}
+	if (!$text) {
+		// Couldn't generate string shorter than 300 characters
+		return_error('COULD_NOT_GENERATE_POST', '400');
+	}
+	$provider = $posting_row['provider'] ?: 'https://bsky.social';
+	$session = atproto_session($conn, $encryption_key, $posting_row['id']);
+	if (isset($session['error'])) {
+		// Wrong bluesky username/password
+		return_error('WRONG_USERNAME_OR_PASSWORD', '401');
+	}
+
+	// Update database
+	$query = 'UPDATE bbdq SET lastPost = NOW(), lastPostText = ?';
+	if ($generated['increase_n']) {
+		$query .= ', n_value = n_value + 1';
+	}
+	$query .= ' WHERE id = ?';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('si', $text, $posting_row['id']);
+	$stmt->execute();
+	$stmt->close();
+
+	// Post thread
+	post_bsky_thread($text, $session, [
+		'provider' => $provider,
+		'language' => $posting_row['language'],
+	]);
+}
+
 return_json([]);

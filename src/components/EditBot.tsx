@@ -174,7 +174,7 @@ const defaultCode = `{
 //		return;
 	}
 
-	const updateBot = async (activate : boolean) => {
+	const updateBot = async (activate : boolean, postNow? : boolean) => {
 		if (!loginDetails) {
 			return;
 		}
@@ -201,6 +201,7 @@ const defaultCode = `{
 			language: language,
 			actionIfLong: actionIfLong,
 			showSource: showSource,
+			postNow: postNow ? true : false,
 		});
 		const res = await fetch( backendURI, {
 			method: 'PATCH',
@@ -313,6 +314,7 @@ const defaultCode = `{
 			</section>
 			<ErrorMessage error={error} />
 			{isFetching ? <p className="updating">Updating bot ...</p> : <section className="buttons">
+				<button type="button" onClick={() => updateBot(active ? true : false, true)}>{active ? "Save and post now" : "Save as draft and post now"}</button>
 				<button type="button" onClick={() => updateBot(true)}>{active ? "Update bot" : "Save settings and activate bot"}</button>
 				<button className="less-attractive-button" type="button" onClick={() => updateBot(false)}>{active ? "Temporarily deactivate bot" : "Save as draft, don't activate bot yet"}</button>
 				{showDeleteForm ? null : <button className="big-red-button" type="button" onClick={() => {
