@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const MainMenu = () => {
+	const [showMenu, setShowMenu] = useState(false);
+
 	return (
 		<nav className="main-menu">
-			<ul>
+			<button className="open-menu-button" onClick={() => setShowMenu((oldValue) => !oldValue)}><Icon icon={showMenu ? faTimes : faBars} /></button>
+			<ul className={showMenu ? 'menu-visible' : 'menu-hidden'}>
 				<li>
 					<NavLink to="/">Front page</NavLink>
 				</li>

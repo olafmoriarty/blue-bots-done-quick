@@ -35,6 +35,10 @@ body {
 	color: var(--white);
 }
 
+.main-menu .open-menu-button {
+	display: none;
+}
+
 .main-menu ul {
 	display: flex;
 	justify-content: center;
@@ -57,6 +61,42 @@ body {
 	background-color: var(--default-background);
 	color: var(--black);
 	text-decoration: underline;
+}
+
+@media screen and (max-width: 800px) {
+	.main-menu .open-menu-button {
+		display: block;
+		background: transparent;
+		color: var(--white);
+		font: inherit;
+		font-size: 1rem;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		border: none;
+		position: absolute;
+		top: .5rem;
+		right: .5rem;
+	}
+	
+	.main-menu:has(.menu-hidden) {
+		position: absolute;
+		top: .5rem;
+		right: .5rem;
+	}
+
+	.main-menu:has(.menu-hidden) .open-menu-button {
+		position: static;
+	}
+
+	.main-menu ul.menu-hidden {
+		display: none;
+	}	
+
+	.main-menu .menu-visible {
+		flex-direction: column;
+	}
+
 }
 
 header {
