@@ -12,12 +12,14 @@ import Footer from './components/Footer';
 import BotList from './components/BotList';
 import Source from './components/Source';
 import Help from './help/Help';
+import MainMenu from './components/MainMenu';
 
 const App = () => {
 	const router = createBrowserRouter([
 		{
 			path: '/',
 			element: <PageContextProvider>
+				<MainMenu />
 			<Header />
 			<Outlet />
 			<Footer />

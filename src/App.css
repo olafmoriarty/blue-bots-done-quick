@@ -30,6 +30,35 @@ body {
 	font-family: var(--default-font);
 }
 
+.main-menu {
+	background: var(--black);
+	color: var(--white);
+}
+
+.main-menu ul {
+	display: flex;
+	justify-content: center;
+	list-style-type: none;
+}
+
+.main-menu a {
+	display: block;
+	padding: .5rem 1rem;
+	color: var(--white);
+	text-transform: uppercase;
+	text-decoration: none;
+}
+
+.main-menu a.active {
+	color: var(--green);
+}
+
+.main-menu a:hover {
+	background-color: var(--default-background);
+	color: var(--black);
+	text-decoration: underline;
+}
+
 header {
 	background: var(--header-background);
 	color: var(--default-text);
@@ -39,6 +68,7 @@ header {
 	align-items: center;
 	justify-content: space-between;
 	margin-bottom: 2rem;
+	text-align: center;
 }
 
 header h1 {
