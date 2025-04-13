@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# PHP passwords
+# PHP passwords and test files
 test.php
+testbot.php
 info.php
 secrets.php

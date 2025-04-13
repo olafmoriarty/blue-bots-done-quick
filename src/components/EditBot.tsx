@@ -219,10 +219,10 @@ const defaultCode = `{
 	}
 
 	return (
-		<main className="main-content">
+		<main className="main-content edit-bot">
 			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <Link to="/">click here</Link>.</p>}
 			<section className="settings-heading">
-			<h2>Settings for {botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"}</h2>
+			<h2>Edit {botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"}</h2>
 			<p><button className="link" onClick={() => logOut('/login')}>Log out ...</button></p>
 			</section>
 			<section className="tracery-input">
@@ -251,50 +251,60 @@ const defaultCode = `{
 				: 
 					<HighlightedTextarea script={script} updateScript={updateScript} highlighting={syntaxHighlighting} />
 				}
-				
-				
-				<p className="back"><a href="#instructions">Insert images, SVGs and hashtags</a></p>
 			</section>
 			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
-				<section className="trace">
-					<h3>Main Tracery rule (the one used when your bot is posting)</h3>
-					<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
-					<h3>Post preview</h3>
-				<Preview text={previewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
-				<p className="back"><button onClick={() => setPreviewText(grammar?.flatten(`#${origin}#`) || '')}>Reroll...</button></p>
+				<section className="edit-form-section">
+					<h3>Automatic posting</h3>
+					<label><p>How often do you want the bot to post?</p>
+					<select value={minutesBetweenPosts} onChange={(ev) => setMinutesBetweenPosts(parseInt(ev.target.value))}>
+						<option value={0}>Never</option>
+						<option value={10}>Every 10 minutes</option>
+						<option value={30}>Every 30 minutes</option>
+						<option value={60}>Every hour</option>
+						<option value={120}>Every 2 hours</option>
+						<option value={180}>Every 3 hours</option>
+						<option value={240}>Every 4 hours</option>
+						<option value={360}>Every 6 hours</option>
+						<option value={480}>Every 8 hours</option>
+						<option value={720}>Every 12 hours</option>
+						<option value={1440}>Every 24 hours</option>
+						<option value={2880}>Every 48 hours</option>
+						<option value={10080}>Every week</option>
+					</select></label>
+
+					{minutesBetweenPosts ? <>
+						<p>Which Tracery rule should be posted automatically at that interval?</p>
+						<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
+						<button type="button" onClick={() => updateBot(active ? true : false, true)}>Post now</button>
+						<p className="button-description">Your bot will be saved {active ? "" : "(but not activated)"} if you click "Post now". The message posted will be generated on the server, meaning it will not match the post preview below.</p>
+						<div className="settings-heading">
+							<h4>Post preview</h4>
+							<p className="back"><button onClick={() => setPreviewText(grammar?.flatten(`#${origin}#`) || '')}>Reroll...</button></p>
+						</div>
+						<Preview text={previewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
+					</> : null}
 				</section>
-				<section className="trace">
-					<h3>Reply Tracery rule (the one used when your bot replies to mentions)</h3>
+				<section className="edit-form-section">
+					<h3>Replies</h3>
 					<select value={reply} onChange={(ev) => setReply(ev.target.value)}><option key="none" value="">Do not post replies</option>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
 					{reply ? <>
-						<h3>Reply preview</h3>
+						<div className="settings-heading">
+							<h4>Reply preview</h4>
+							<p className="back"><button onClick={() => setReplyPreviewText(grammar?.flatten(`#${origin}#`) || '')}>Reroll...</button></p>
+						</div>
 						<Preview text={replyPreviewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
-						<p className="back"><button onClick={() => setReplyPreviewText(grammar?.flatten(`#${reply}#`) || '')}>Reroll...</button></p>
 					</> : null}
-					</section>
+				</section>
+				<section className="edit-form-section">
+					<h3>Settings</h3>
 
-			<section className="settings">
-				<h3>Posting frequency</h3>
-				<select value={minutesBetweenPosts} onChange={(ev) => setMinutesBetweenPosts(parseInt(ev.target.value))}>
-					<option value={0}>Never</option>
-					<option value={10}>Every 10 minutes</option>
-					<option value={30}>Every 30 minutes</option>
-					<option value={60}>Every hour</option>
-					<option value={120}>Every 2 hours</option>
-					<option value={180}>Every 3 hours</option>
-					<option value={240}>Every 4 hours</option>
-					<option value={360}>Every 6 hours</option>
-					<option value={480}>Every 8 hours</option>
-					<option value={720}>Every 12 hours</option>
-					<option value={1440}>Every 24 hours</option>
-					<option value={2880}>Every 48 hours</option>
-					<option value={10080}>Every week</option>
-				</select>
-				<h3>Post language</h3>
-				<select value={language} onChange={(ev) => setLanguage(ev.target.value)}>
-					{languages.sort((a, b) => a.name < b.name ? -1 : 1).map(el => <option value={el.code} key={el.code}>{el.name}</option>)}
-				</select>
-				<h3>If a generated post is more than 300 characters long...</h3>
+					<p>Post language</p>
+					<select value={language} onChange={(ev) => setLanguage(ev.target.value)}>
+						{languages.sort((a, b) => a.name < b.name ? -1 : 1).map(el => <option value={el.code} key={el.code}>{el.name}</option>)}
+					</select>
+
+				
+					<p>If a generated post is more than 300 characters long...</p>
 				<p><label><input 
 					type="radio" 
 					name="actionIfLong" 
@@ -309,12 +319,11 @@ const defaultCode = `{
 					checked={actionIfLong}
 					onChange={() => setActionIfLong(true)}
 				/> Split text into chunks and post as a thread</label></p>
-				<h3>Share your code?</h3>
 				<p><label><input type="checkbox" checked={showSource} onChange={() => setShowSource(old => !old)}  /> Allow other users to read the source code of my bot</label></p>
-			</section>
+
+				</section>	
 			<ErrorMessage error={error} />
 			{isFetching ? <p className="updating">Updating bot ...</p> : <section className="buttons">
-				<button type="button" onClick={() => updateBot(active ? true : false, true)}>{active ? "Save and post now" : "Save as draft and post now"}</button>
 				<button type="button" onClick={() => updateBot(true)}>{active ? "Update bot" : "Save settings and activate bot"}</button>
 				<button className="less-attractive-button" type="button" onClick={() => updateBot(false)}>{active ? "Temporarily deactivate bot" : "Save as draft, don't activate bot yet"}</button>
 				{showDeleteForm ? null : <button className="big-red-button" type="button" onClick={() => {

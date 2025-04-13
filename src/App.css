@@ -33,6 +33,8 @@ body {
 .main-menu {
 	background: var(--black);
 	color: var(--white);
+	position: sticky;
+	top: 0;
 }
 
 .main-menu .open-menu-button {
@@ -397,6 +399,35 @@ main .proceed button {
 	margin: 0;
 }
 
+.edit-bot h3 {
+	font-size: 2rem;
+}
+
+.edit-form-section {
+	background: var(--white);
+	padding: 1rem;
+	border: solid 1px var(--black);
+	border-radius: .5rem;
+	margin-bottom: 1rem;
+}
+
+.edit-form-section h3:first-child {
+	margin-top: 0;
+}
+
+.edit-form-section > :last-child {
+	margin-bottom: 0;
+}
+
+.edit-form-section h4 {
+	font-size: 1.25rem;	
+}
+
+.button-description {
+	margin-top: .5rem;
+	font-size: 90%;
+}
+
 .tracery-mode-tags {
 	display: flex;
 	gap: .5rem;
@@ -556,6 +587,7 @@ main .proceed button {
 	border: solid 1px var(--black);
 	border-radius: .5rem;
 	margin-top: -1px;
+	margin-bottom: 1rem;
 }
 
 .json-textarea {
