@@ -1,12 +1,13 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import makeJsonPretty from "../utils/makeJsonPretty";
 
-const TraceryWysiwygEditor = (props : { script : string, updateScript : (script : string) => void, origin : string, highlighting : boolean, separator : string }) => {
+const TraceryWysiwygEditor = (props : { script : string, updateScript : (script : string) => void, origin : string, reply? : string, highlighting : boolean, separator : string, replyScript? : string }) => {
 
 	const [tree, setTree] = useState([ props.origin ] as string[]);
 	const currentNode = tree.length ? tree[tree.length - 1] : '';
 	const {script, updateScript, highlighting, separator} = props;
 	const [sections, setSections] = useState([] as Section[]);
+	const [replyRules, setReplyRules] = useState([] as string[]);
 
 	const [text, setText] = useState('');
 
@@ -50,6 +51,28 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 	useEffect(() => {
 		setTree([ props.origin])
 	}, [props.origin]);
+
+	useEffect(() => {
+		if (props.reply) {
+			setReplyRules([ props.reply ]);
+		}
+		if (props.replyScript) {
+			try {
+				const replies : { [key : string] : string } = JSON.parse(props.replyScript);
+				let tags : string[] = [];
+				Object.keys(replies).forEach(key => {
+					const text = replies[key];
+					const replySections = getTracerySections(text).filter(el => el.type === 'tag').map((el) => el.content.substring(1, el.content.length - 1));
+					tags.push( ...replySections );
+				})
+				setReplyRules(tags);
+			}
+			catch (e) {
+
+			}
+
+		}
+	}, [props.replyScript])
 
 	const updateText = (inputText? : string) => {
 		let text = script;
@@ -155,12 +178,12 @@ const TraceryWysiwygEditor = (props : { script : string, updateScript : (script 
 					}
 				}} />
 			</div>
-			<TagButtons sections={sections} existingRules={Object.keys( JSON.parse(script) )} addToTree={addToTree} level={Math.min(tree.length - 1, 4)} />
+			<TagButtons sections={sections} existingRules={Object.keys( JSON.parse(script) )} addToTree={addToTree} level={Math.min(tree.length - 1, 4)} replyRules={tree.length === 1 ? replyRules.filter(el => el != tree[0]) : undefined} />
 		</div>
 	);
 }
 
-const TagButtons = (props : {sections : Section[], existingRules : string[], addToTree : (rule : string) => void, level : number}) => {
+const TagButtons = (props : {sections : Section[], replyRules? : string[], existingRules : string[], addToTree : (rule : string) => void, level : number}) => {
 	const {sections} = props;
 	let tags = sections
 		.filter((el) => el.type === 'tag')
@@ -168,6 +191,9 @@ const TagButtons = (props : {sections : Section[], existingRules : string[], add
 		.map(el => el.split('.')[0]);
 	tags = tags.filter((el, index) => tags.indexOf(el) === index);
 
+	if (props.replyRules) {
+		tags.push( ...props.replyRules.filter((el, index) => props.replyRules?.indexOf(el) === index).filter(el => !tags.includes(el)) );
+	}
 	let allTags = [] as string[];
 	tags.forEach(tag => {
 		if (!tag.includes('{')) {
@@ -183,7 +209,6 @@ const TagButtons = (props : {sections : Section[], existingRules : string[], add
 			return;
 		}
 		const uniqueMatches = matches.filter((el, index) => index === matches.map((el2) => el2[1]).indexOf(el[1])).map(match => match[1]);
-		console.log(uniqueMatches);
 
 		let newTags = [ tag ];
 

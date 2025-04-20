@@ -32,13 +32,13 @@ function check_replies() {
 	$post_length = 300;
 
 	// Update timestamp for all non-replying bots so that if they start replying at some point they won't post replies for the past ten years of replies
-	$query = 'UPDATE bbdq SET lastNotification = REPLACE(UTC_TIMESTAMP(), " ", "T") WHERE active = 1 AND reply = ""';
+	$query = 'UPDATE bbdq SET lastNotification = REPLACE(UTC_TIMESTAMP(), " ", "T") WHERE active = 1 AND replyMode = 0 AND reply = ""';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$stmt->close();
 
 	// Get all active bots that should reply
-	$query = 'SELECT identifier, id, provider, script, reply, actionIfLong, language, lastNotification, n_value FROM bbdq WHERE active = 1 AND reply != ""';
+	$query = 'SELECT identifier, id, provider, script, reply, replyMode, replyScript, actionIfLong, language, lastNotification, n_value FROM bbdq WHERE active = 1 AND (reply != "" OR replyMode = 1)';
 	if ($letter) {
 		$query .= ' AND SUBSTRING(did, 9, 1) = ?';
 	}
@@ -59,8 +59,12 @@ function check_replies() {
 	while ($row = $result->fetch_assoc()) {
 		$tracery_code = json_decode($row['script'], true);
 		
-		if (!$tracery_code || !is_array($tracery_code) || !isset($tracery_code[$row['reply']])) {
+		if (!$tracery_code || !is_array($tracery_code)) {
 			// Invalid tracery code
+			continue;
+		}
+
+		if ($row['replyMode'] === 0 && !isset($tracery_code[$row['reply']])) {
 			continue;
 		}
 
@@ -143,6 +147,7 @@ function check_replies() {
 				$stmt->close();
 				$botcountrow = $botcount->fetch_assoc();
 				if (!$botcountrow['botcount']) {
+					$new_reply['text'] = $notif['record']['text'];
 					$replies[] = $new_reply;
 				}
 
@@ -163,7 +168,28 @@ function check_replies() {
 	
 			$n = $row['n_value'];
 			foreach ($replies as $reply) {
-				$generated = generate_post($row['script'], $row['reply'], $row['actionIfLong'] ? 0 : $post_length, $n);
+				if ($row['replyMode'] === 1) {
+					// Reply mode is set to custom replies
+					
+					$full_input = '';
+					$reply_script = json_decode( $row['replyScript'], true );
+					if ($reply_script && is_array($reply_script)) {
+						foreach ($reply_script as $key => $value) {
+							$regex = '/' . str_replace('/', '\/', $key) . '/i';
+							if (preg_match($regex, $reply['text'])) {
+								$full_input = $value;
+								break;
+							}
+						}
+				
+					}
+					if ($full_input) {
+						$generated = generate_post($row['script'], '', $row['actionIfLong'] ? 0 : $post_length, $n, $full_input);
+					}
+				}
+				else {
+					$generated = generate_post($row['script'], $row['reply'], $row['actionIfLong'] ? 0 : $post_length, $n);
+				}
 
 				$text = '';
 				if (isset($generated) && $generated && isset($generated['text'])) {

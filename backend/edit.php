@@ -15,7 +15,7 @@ if (str_starts_with($body['identifier'], '@')) {
 }
 
 // Get user
-$query = 'SELECT password, iv, script, msg, reply, activeSince FROM bbdq WHERE identifier = ? AND provider = ?';
+$query = 'SELECT password, iv, script, msg, reply, replyScript, activeSince FROM bbdq WHERE identifier = ? AND provider = ?';
 $stmt = $conn->prepare($query);
 $stmt->bind_param('ss', $body['identifier'], $provider);
 $stmt->execute();
@@ -55,6 +55,12 @@ if (!$rule || !isset($script[$rule])) {
 	$body['reply'] = '';
 }
 
+// Reply rule should either exist or be an empty string
+$rule = $body['replyScript'] ?? $row['replyScript'];
+if (!$rule) {
+	$body['replyScript'] = '';
+}
+
 // If minutesBetweenPosts is given, check if it's a number
 if (isset($body['minutesBetweenPosts']) && !is_int($body['minutesBetweenPosts']) && !is_numeric($body['minutesBetweenPosts'])) {
 	return_error('MINUTES_NOT_A_NUMBER');
@@ -66,8 +72,8 @@ $fields_to_update = [];
 $new_values = [];
 $bind_param_string = '';
 
-$possible_fields = ['script', 'msg', 'reply', 'minutesBetweenPosts', 'language', 'active', 'actionIfLong', 'showSource'];
-$ints = ['minutesBetweenPosts'];
+$possible_fields = ['script', 'msg', 'reply', 'replyScript', 'replyMode', 'minutesBetweenPosts', 'language', 'active', 'actionIfLong', 'showSource'];
+$ints = ['minutesBetweenPosts', 'replyMode'];
 $bools = ['active', 'actionIfLong', 'showSource'];
 
 foreach ($possible_fields as $field) {

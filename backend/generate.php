@@ -3,11 +3,11 @@
 // Get Tracery parser
 include('tracery-parser.php');
 
-function generate_post($script, $origin, $max_length = 0, $n_input = 0) {
+function generate_post($script, $origin, $max_length = 0, $n_input = 0, $full_input = '') {
 	$tracery = new Tracery;
 	$tracery_code = json_decode($script, true);
 	
-	if (!$tracery_code || !is_array($tracery_code) || !isset($tracery_code[$origin])) {
+	if (!$tracery_code || !is_array($tracery_code) || ((!$origin || !isset($tracery_code[$origin])) && !$full_input)) {
 		// Invalid tracery code
 		return;
 	}
@@ -52,7 +52,13 @@ function generate_post($script, $origin, $max_length = 0, $n_input = 0) {
 	$regex = '/\{(' . implode('|', $possible_tags) . ')(?:[  ]([^}]*))?}/';
 	
 	for ($i = 0; $i < 10; $i++) {
-		$generated_text = $grammar->flatten('#' . $origin . '#');
+		$generated_text = '';
+		if ($full_input) {
+			$generated_text = $grammar->flatten($full_input);
+		}
+		else {
+			$generated_text = $grammar->flatten('#' . $origin . '#');
+		}
 		if (!$max_length || strlen(preg_replace( $regex, '', $generated_text )) <= $max_length) {
 			$text = $generated_text;
 			break;

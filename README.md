@@ -36,6 +36,8 @@ CREATE TABLE `bbdq` (
   `minutesBetweenPosts` int(10) DEFAULT NULL,
   `msg` varchar(255) DEFAULT NULL,
   `reply` varchar(255) DEFAULT NULL,
+  `replyMode` tinyint(1) NOT NULL DEFAULT '0',
+  `replyScript` mediumtext DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `thumb` varchar(255) DEFAULT NULL,
   `followers` int(10) DEFAULT NULL,

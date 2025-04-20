@@ -450,6 +450,10 @@ main .proceed button {
 	background: var(--black);
 }
 
+.tracery-mode-tags button.replies-button {
+	background: var(--yellow);
+}
+
 .tracery-mode-tags button.cog-button {
 	border: none;
 	background: transparent;
@@ -513,6 +517,65 @@ main .proceed button {
 
 .tracery-mode-tags .mode-settings article:has(input:checked) {
 	background: var(--yellow);
+}
+
+.reply-form {
+	background: var(--yellow);
+	padding: 1rem;
+}
+
+.reply-form .instructions {
+	font-size: .8rem;
+	text-align: right;
+}
+
+.reply-form > :last-child {
+	margin-bottom: 0;
+}
+
+.reply-rule {
+	border: dotted 1px var(--headers);
+	padding: .5rem;
+	border-radius: .5rem;
+	margin-bottom: 1rem;
+	background: var(--white);
+}
+
+.reply-rule p, .reply-rule input {
+	margin-bottom: 0;
+}
+
+.reply-rule:has(.reply-rule-key input[value=""]) {
+	font-style: italic;
+}
+
+.reply-error {
+	color: #aa0000;
+	font-size: .9rem;
+	font-weight: bold;
+}
+
+@media screen and (min-width: 800px) {
+	.reply-rule {
+		display: flex;
+		gap: 1rem;
+	}
+
+	.reply-rule-key {
+		width: 30%;
+	}
+
+	.reply-rule-value {
+		width: calc(70% - 1rem);
+	}
+}
+
+fieldset {
+	border: none;
+	margin-bottom: 1rem;
+}
+fieldset p {
+	margin: .25rem 0;
 }
 
 .help {

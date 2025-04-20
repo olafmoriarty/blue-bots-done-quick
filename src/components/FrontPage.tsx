@@ -16,10 +16,6 @@ const FrontPage = () => {
 
 	}, []);
 
-	useEffect(() => {
-		console.log(popularBots);
-	}, [popularBots]);
-
 	const getBots = async (sort? : string, limit = 20) => {
 		let queryString = '';
 		if (sort === 'activeSince') {

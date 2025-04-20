@@ -13,6 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import HighlightedTextarea from './HighlightedTextarea';
 import TraceryWysiwygEditor from './TraceryWysiwigEditor';
 import phpdate from '../utils/phpdate';
+import ReplyForm from './ReplyForm';
 
 
 function EditBot(props : {demo? : boolean}) {
@@ -30,6 +31,10 @@ const defaultCode = `{
     "location": ["World", "Earth", "Jupiter", "Odalen", "galaxy", "Gallifrey", "Sesame Street"]
 }`;
 
+const defaultReplyCode = `{
+	".": "#origin#"
+}`;
+
 	const {botSettings, loginDetails, backendURI, logOut} = usePage();
 
 	const navigate = useNavigate();
@@ -39,6 +44,8 @@ const defaultCode = `{
 	const [parsingError, setParsingError] = useState(false);
 	const [origin, setOrigin] = useState(botSettings?.msg || 'origin');
 	const [reply, setReply] = useState(botSettings?.reply || '');
+	const [replyMode, setReplyMode] = useState(botSettings?.replyMode || 0);
+	const [replyScript, setReplyScript] = useState(botSettings?.replyScript || defaultReplyCode);
 	const [minutesBetweenPosts, setMinutesBetweenPosts] = useState(botSettings?.minutesBetweenPosts || 720);
 	const [active, setActive] = useState(botSettings?.active);
 	const [language, setLanguage] = useState(botSettings?.language || "en");
@@ -53,15 +60,21 @@ const defaultCode = `{
 	const [showDeleteForm, setShowDeleteForm] = useState(false);
 
 	const [editorMode, setEditorMode] = useState('wysiwyg' as 'wysiwyg'|'json');
+	const [replyEditorMode, setReplyEditorMode] = useState('wysiwyg' as 'wysiwyg'|'json');
 	const [showEditorSettings, setShowEditorSettings] = useState(false);
 	const [syntaxHighlighting, setSyntaxHighlighting] = useState(false);
 	const [separator, setSeparator] = useState("\n");
+	const [examplePostToReplyTo, setExamplePostToReplyTo] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed aliquam, diam non porta vestibulum, dui ligula condimentum turpis, ut ornare erat turpis at sapien. Ut porta massa in est commodo, in porttitor tortor convallis. Donec lacinia mattis magna. Sed et turpis magna. Suspendisse semper eleifend.')
 
 	// Get editor mode from localStorage
 	useEffect(() => {
 		const storedEditorMode = localStorage.getItem('editorMode');
 		if (storedEditorMode && (storedEditorMode === 'wysiwyg' || storedEditorMode === 'json')) {
 			setEditorMode(storedEditorMode);
+		}
+		const storedReplyEditorMode = localStorage.getItem('replyEditorMode');
+		if (storedReplyEditorMode && (storedReplyEditorMode === 'wysiwyg' || storedReplyEditorMode === 'json')) {
+			setReplyEditorMode(storedReplyEditorMode);
 		}
 		const storedHighlightingMode = localStorage.getItem('syntaxHighlighting');
 		if (storedHighlightingMode && (storedHighlightingMode === '0')) {
@@ -91,12 +104,22 @@ const defaultCode = `{
 	}, [grammar, origin]);
 
 	useEffect(() => {
-		setReplyPreviewText(grammar?.flatten(`#${reply}#`) || '');
-	}, [grammar, reply]);
+		if (replyMode === 1) {
+			updateReplyPreviewFromJson();
+		}
+		else {
+			setReplyPreviewText(grammar?.flatten(`#${reply}#`) || '');
+		}
+	}, [grammar, reply, replyMode, replyScript, examplePostToReplyTo]);
 
 	const changeEditorMode = (mode : 'wysiwyg'|'json') => {
 		setEditorMode(mode);
 		localStorage.setItem('editorMode', mode);
+	}
+
+	const changeReplyEditorMode = (mode : 'wysiwyg'|'json') => {
+		setReplyEditorMode(mode);
+		localStorage.setItem('replyEditorMode', mode);
 	}
 
 	const changeSyntaxHighlighting = (mode : boolean) => {
@@ -107,6 +130,24 @@ const defaultCode = `{
 	const changeSeparator = (newSeparator : string) => {
 		setSeparator(newSeparator);
 		localStorage.setItem('separator', newSeparator);
+	}
+
+	const updateReplyPreviewFromJson = () => {
+		try {
+			const replyScriptJson = JSON.parse(replyScript);
+			const jsonKeys = Object.keys(replyScriptJson);
+			for (let i = 0; i < jsonKeys.length; i++) {
+				const regex = new RegExp(jsonKeys[i].replaceAll('/', '\/'), 'i');
+				if (regex.test(examplePostToReplyTo)) {
+					setReplyPreviewText(grammar?.flatten(replyScriptJson[jsonKeys[i]]) || '');
+					return;
+				}
+			}
+			setReplyPreviewText('');
+		}
+		catch (e) {
+			console.log(e);
+		}
 	}
 
 	const updateScript = (inputText? : string) => {
@@ -196,6 +237,8 @@ const defaultCode = `{
 			script: script,
 			msg: origin,
 			reply: reply,
+			replyMode: replyMode,
+			replyScript: replyScript,
 			active: activate,
 			minutesBetweenPosts: minutesBetweenPosts,
 			language: language,
@@ -247,7 +290,7 @@ const defaultCode = `{
 					</div> : null}
 				</div>
 				{editorMode === 'wysiwyg' ? 
-					<TraceryWysiwygEditor script={script} updateScript={updateScript} origin={origin} highlighting={syntaxHighlighting} separator={separator} /> 
+					<TraceryWysiwygEditor script={script} updateScript={updateScript} origin={origin} reply={reply} highlighting={syntaxHighlighting} separator={separator} replyScript={replyMode === 1 ? replyScript : undefined} /> 
 				: 
 					<HighlightedTextarea script={script} updateScript={updateScript} highlighting={syntaxHighlighting} />
 				}
@@ -286,7 +329,38 @@ const defaultCode = `{
 				</section>
 				<section className="edit-form-section">
 					<h3>Replies</h3>
-					<select value={reply} onChange={(ev) => setReply(ev.target.value)}><option key="none" value="">Do not post replies</option>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
+					<select value={replyMode === 1 ? ':::::CUSTOM-REPLIES:::::' : reply} onChange={(ev) => {
+						if (ev.target.value === ":::::CUSTOM-REPLIES:::::") {
+							setReplyMode(1);
+							setReply('');
+							return;
+						}
+						setReplyMode(0);
+						setReply(ev.target.value);
+					}}>
+						<option key="none" value="">Do not post replies</option>
+						<option key="custom" value=":::::CUSTOM-REPLIES:::::">Post a custom reply</option>
+						{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}
+					</select>
+					{replyMode === 1 ? <>
+						<div className="tracery-mode-tags">
+							<button className={`replies-button ${parsingError ? 'button-not-active' : ''} ${replyEditorMode === 'wysiwyg' ? 'active' : ''}`} onClick={!parsingError ? () => changeReplyEditorMode('wysiwyg') : undefined}>Editor view</button>
+							<button className={`json-button ${replyEditorMode === 'json' ? 'active' : ''}`} onClick={() => changeReplyEditorMode('json')}>JSON view</button>
+						</div>
+						{replyEditorMode === 'wysiwyg' ?
+						<ReplyForm json={replyScript} updateJson={setReplyScript} />
+						:
+						<HighlightedTextarea script={replyScript} updateScript={setReplyScript} highlighting={syntaxHighlighting} />
+
+						}
+						<div className="settings-heading">
+							<h4>Reply preview</h4>
+							<p className="back"><button onClick={() => updateReplyPreviewFromJson()}>Reroll...</button></p>
+						</div>
+						<p><label>Input (change this to see how the bot will respond to different user messages):<br /><input type="text" value={examplePostToReplyTo} onChange={ev => setExamplePostToReplyTo(ev.target.value)} /></label></p>
+						<Preview text={replyPreviewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
+					</>
+					: null}
 					{reply ? <>
 						<div className="settings-heading">
 							<h4>Reply preview</h4>
@@ -298,29 +372,30 @@ const defaultCode = `{
 				<section className="edit-form-section">
 					<h3>Settings</h3>
 
-					<p>Post language</p>
+					<p><label><input type="checkbox" checked={showSource} onChange={() => setShowSource(old => !old)}  /> Allow other users to read the source code of my bot</label></p>
+					<h4>Post language</h4>
 					<select value={language} onChange={(ev) => setLanguage(ev.target.value)}>
 						{languages.sort((a, b) => a.name < b.name ? -1 : 1).map(el => <option value={el.code} key={el.code}>{el.name}</option>)}
 					</select>
 
 				
-					<p>If a generated post is more than 300 characters long...</p>
-				<p><label><input 
-					type="radio" 
-					name="actionIfLong" 
-					value="retry"
-					checked={!actionIfLong}
-					onChange={() => setActionIfLong(false)}
-				/> Try regenerating a shorter post text (max 10 attempts)</label></p>
-				<p><label><input 
-					type="radio" 
-					name="actionIfLong" 
-					value="thread"
-					checked={actionIfLong}
-					onChange={() => setActionIfLong(true)}
-				/> Split text into chunks and post as a thread</label></p>
-				<p><label><input type="checkbox" checked={showSource} onChange={() => setShowSource(old => !old)}  /> Allow other users to read the source code of my bot</label></p>
-
+					<h4>If a generated post is more than 300 characters long...</h4>
+					<fieldset>
+					<p><label><input 
+						type="radio" 
+						name="actionIfLong" 
+						value="retry"
+						checked={!actionIfLong}
+						onChange={() => setActionIfLong(false)}
+					/> Try regenerating a shorter post text (max 10 attempts)</label></p>
+					<p><label><input 
+						type="radio" 
+						name="actionIfLong" 
+						value="thread"
+						checked={actionIfLong}
+						onChange={() => setActionIfLong(true)}
+					/> Split text into chunks and post as a thread</label></p>
+					</fieldset>
 				</section>	
 			<ErrorMessage error={error} />
 			{isFetching ? <p className="updating">Updating bot ...</p> : <section className="buttons">

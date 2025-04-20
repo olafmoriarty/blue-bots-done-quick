@@ -119,6 +119,8 @@ export type BotSettingsFromAPI = {
 	minutesBetweenPosts : number|null,
 	msg : string|null,
 	reply : string|null,
+	replyMode : number|null,
+	replyScript : string|null,
 	actionIfLong : boolean,
 	showSource : boolean,
 	name? : string,
