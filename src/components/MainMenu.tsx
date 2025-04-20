@@ -22,7 +22,7 @@ const MainMenu = () => {
 				<li>
 					<NavLink to="/help/">Help</NavLink>
 				</li>
-				<li><a href="" target="_blank">Patreon</a></li>
+				<li><a href="https://patreon.com/bbdq" target="_blank">Patreon</a></li>
 			</ul>
 		</nav>
 	)
