@@ -15,12 +15,23 @@ if (str_starts_with($body['identifier'], '@')) {
 }
 
 // Check if user exists
-$query = 'SELECT password, iv, active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider = ?';
-$stmt = $conn->prepare($query);
-$stmt->bind_param('ss', $body['identifier'], $provider);
-$stmt->execute();
-$result = $stmt->get_result();
-$stmt->close();
+
+if ($provider === 'https://bsky.social') {
+	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('s', $body['identifier']);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+}
+else {
+	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider = ?';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('ss', $body['identifier'], $provider);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+}
 
 if ($result->num_rows) {
 	// Check if password is correct
@@ -39,9 +50,9 @@ if ($result->num_rows) {
 		$iv_hex = bin2hex($iv);
 		$encrypted_password = openssl_encrypt($body['password'], 'aes-256-cbc', $encryption_key, 0, $iv);
 
-		$query = 'UPDATE bbdq SET password = ?, iv = ?, accessJwt = null, accessJwt_time = null, refreshJwt = null, refreshJwt_time = null WHERE identifier = ? AND provider = ?';
+		$query = 'UPDATE bbdq SET password = ?, iv = ?, accessJwt = null, accessJwt_time = null, refreshJwt = null, refreshJwt_time = null WHERE id = ?';
 		$stmt = $conn->prepare($query);
-		$stmt->bind_param('ssss', $encrypted_password, $iv_hex, $body['identifier'], $provider);
+		$stmt->bind_param('ssi', $encrypted_password, $iv_hex, $row['id']);
 		$stmt->execute();
 		$stmt->close();
 	}

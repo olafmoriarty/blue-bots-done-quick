@@ -43,7 +43,7 @@ function atproto_session($conn, $encryption_key, $id) {
 	// If not, do we have a valid refresh token?
 
 	$provider = $row['provider'];
-	if (!$provider) {
+	if (!$provider || str_contains($provider, 'bsky.network')) {
 		$provider = 'https://bsky.social';
 	}
 
@@ -55,14 +55,26 @@ function atproto_session($conn, $encryption_key, $id) {
 			'token' => $refresh_token,
 		]);
 
-		if (isset($session['accessJwt'])) {
+		if (isset($session['error'])) {
+			$error_message = date('d.m.Y, H:i:s') . ' - Error from com.atproto.server.refreshSession (user ' . $row['id'] . '): ' . $session['error'];
+			if (isset($session['message'])) {
+				$error_message .= ' - ' . $session['message'];
+			}
+			if ($session['error'] === 'ExpiredToken') {
+				$error_message .= ' | Token: ' . $refresh_token;
+			}
+			error_log($error_message);
+		}
+
+		if (isset($session['accessJwt']) && isset($session['refreshJwt'])) {
 			// Save new token to database ...
 
 			// TODO: Check headers for token lifespan instead of assuming two hours
 			$encrypted_access_token = openssl_encrypt($session['accessJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-			$query = 'UPDATE bbdq SET accessJwt = ?, accessJwt_time = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE id = ?';
+			$encrypted_refresh_token = openssl_encrypt($session['refreshJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+			$query = 'UPDATE bbdq SET accessJwt = ?, accessJwt_time = DATE_ADD(NOW(), INTERVAL 2 HOUR), refreshJwt = ?, refreshJwt_time = DATE_ADD(NOW(), INTERVAL 58 DAY) WHERE id = ?';
 			$stmt = $conn->prepare($query);
-			$stmt->bind_param('si', $encrypted_access_token, $id);
+			$stmt->bind_param('ssi', $encrypted_access_token, $encrypted_refresh_token, $id);
 			$stmt->execute();
 			$stmt->close();
 
@@ -80,7 +92,15 @@ function atproto_session($conn, $encryption_key, $id) {
 			'password' => $password,
 		],
 	]);
-	
+
+	if (isset($session['error'])) {
+		$error_message = date('d.m.Y, H:i:s') . ' - Error from com.atproto.server.createSession (user ' . $row['id'] . '): ' . $session['error'];
+		if (isset($session['message'])) {
+			$error_message .= ' - ' . $session['message'];
+		}
+		error_log($error_message);
+	}
+
 	if (isset($session['accessJwt'])) {
 		// Save new tokens to database ...
 
@@ -92,6 +112,15 @@ function atproto_session($conn, $encryption_key, $id) {
 		$stmt->bind_param('ssi', $encrypted_access_token, $encrypted_refresh_token, $id);
 		$stmt->execute();
 		$stmt->close();
+
+		// If provider is bsky.social, see if we can find a better one
+		if ($row['provider'] === 'https://bsky.social' && isset($session['didDoc']) && isset($session['didDoc']['service']) && isset($session['didDoc']['service'][0]) && isset($session['didDoc']['service'][0]['serviceEndpoint'])) {
+			$query = 'UPDATE bbdq SET provider = ? WHERE id = ?';
+			$stmt = $conn->prepare($query);
+			$stmt->bind_param('si', $session['didDoc']['service'][0]['serviceEndpoint'], $id);
+			$stmt->execute();
+			$stmt->close();
+		}
 
 		// Return the session
 		return $session;
@@ -362,6 +391,9 @@ function upload_blob_from_url( $url, $provider, $token ) {
 
 		// Get image dimensions
 		$image_size = getimagesize('data:' . $content_type . ';base64, ' . base64_encode($image));
+		if (!is_array($image_size)) {
+			$image_size = [0, 0];
+		}
 		$aspect_ratio = ['width' => $image_size[0], 'height' => $image_size[1]];
 
 		// Upload it to bsky

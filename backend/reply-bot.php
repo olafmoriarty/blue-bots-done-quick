@@ -38,7 +38,7 @@ function check_replies() {
 	$stmt->close();
 
 	// Get all active bots that should reply
-	$query = 'SELECT identifier, id, provider, script, reply, replyMode, replyScript, actionIfLong, language, lastNotification, n_value FROM bbdq WHERE active = 1 AND (reply != "" OR replyMode = 1)';
+	$query = 'SELECT identifier, id, provider, script, reply, replyMode, replyScript, actionIfLong, language, lastNotification, n_value FROM bbdq WHERE active = 1 AND (reply != "" OR replyMode = 1) ORDER BY followers DESC';
 	if ($letter) {
 		$query .= ' AND SUBSTRING(did, 9, 1) = ?';
 	}
@@ -57,6 +57,20 @@ function check_replies() {
 
 	// For each bot
 	while ($row = $result->fetch_assoc()) {
+
+		$query = 'SELECT lastNotification FROM bbdq WHERE id = ?';
+		$stmt = $conn->prepare($query);
+		$stmt->bind_param('i', $row['id']);
+		$stmt->execute();
+		$lastnotif_result = $stmt->get_result();
+		$stmt->close();
+
+		if (!$lastnotif_result->num_rows) {
+			continue;
+		}
+		$last_notification_row = $lastnotif_result->fetch_assoc();
+		$last_notification = $last_notification_row['lastNotification'];
+
 		$tracery_code = json_decode($row['script'], true);
 		
 		if (!$tracery_code || !is_array($tracery_code)) {
@@ -91,21 +105,23 @@ function check_replies() {
 				'query' => $queryString,
 				'token' => $session['accessJwt'],
 			] );
-			$notifications = array_merge($notifications, $notifications_result['notifications']);
+			if (isset($notifications_result['notifications']) && is_array($notifications_result['notifications'])) {
+				$notifications = array_merge($notifications, $notifications_result['notifications']);
+			}
 
 			$cursor = '';
 			if (isset($notifications_result['cursor'])) {
 				$cursor = $notifications_result['cursor'];
 			}
 		}
-		while ($cursor > $row['lastNotification']);
+		while ($cursor > $last_notification);
 
 		// Filter out replies and mentions
 		$replies = [];
 		$notification_count = count($notifications);
 		for ($i = 0; $i < $notification_count; $i++) {
 			$notif = $notifications[$i];
-				if ($notif['indexedAt'] <= $row['lastNotification']) {
+				if ($notif['indexedAt'] <= $last_notification) {
 				continue;
 			}
 
@@ -154,7 +170,7 @@ function check_replies() {
 			}
 		}
 
-		if ($notification_count && $notifications[0]['indexedAt'] > $row['lastNotification']) {
+		if ($notification_count && $notifications[0]['indexedAt'] > $last_notification) {
 			// Update database
 			$new_last_notification = $notifications[0]['indexedAt'];
 			$query = 'UPDATE bbdq SET lastNotification = ? WHERE id = ?';

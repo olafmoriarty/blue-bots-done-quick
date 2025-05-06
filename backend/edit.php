@@ -14,13 +14,23 @@ if (str_starts_with($body['identifier'], '@')) {
 	$body['identifier'] = substr($body['identifier'], 1);
 }
 
-// Get user
-$query = 'SELECT password, iv, script, msg, reply, replyScript, activeSince FROM bbdq WHERE identifier = ? AND provider = ?';
-$stmt = $conn->prepare($query);
-$stmt->bind_param('ss', $body['identifier'], $provider);
-$stmt->execute();
-$result = $stmt->get_result();
-$stmt->close();
+
+if ($provider === 'https://bsky.social') {
+	$query = 'SELECT id, password, iv, script, msg, reply, replyScript, activeSince FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('s', $body['identifier']);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+}
+else {
+	$query = 'SELECT id, password, iv, script, msg, reply, replyScript, activeSince FROM bbdq WHERE identifier = ? AND provider = ?';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('ss', $body['identifier'], $provider);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+}
 
 if (!$result->num_rows) {
 	// Username does not exist.
@@ -90,10 +100,9 @@ if (count($fields_to_update)) {
 	if (isset($body['active']) && $body['active'] && !$row['activeSince']) {
 		$query .= ', activeSince = NOW(), lastNotification = REPLACE(UTC_TIMESTAMP(), " ", "T")';
 	}
-	$query .= ' WHERE identifier = ? AND provider = ?';
-	$bind_param_string .= 'ss';
-	$new_values[] = $body['identifier'];
-	$new_values[] = $provider;
+	$query .= ' WHERE id = ?';
+	$bind_param_string .= 'i';
+	$new_values[] = $row['id'];
 
 	$stmt = $conn->prepare($query);
 	$stmt->bind_param($bind_param_string, ...$new_values);
@@ -106,9 +115,9 @@ if (isset($body['postNow']) && $body['postNow']) {
 	// Get generate_post function
 	include('generate.php');
 
-	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE identifier = ? and provider = ?';
+	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE id = ?';
 	$stmt = $conn->prepare($query);
-	$stmt->bind_param('ss', $body['identifier'], $provider);
+	$stmt->bind_param('i', $row['id']);
 	$stmt->execute();
 	$result = $stmt->get_result();
 	$stmt->close();

@@ -15,12 +15,22 @@ if (str_starts_with($body['identifier'], '@')) {
 }
 
 // Get user
-$query = 'SELECT id, password, iv FROM bbdq WHERE identifier = ? AND provider = ?';
-$stmt = $conn->prepare($query);
-$stmt->bind_param('ss', $body['identifier'], $provider);
-$stmt->execute();
-$result = $stmt->get_result();
-$stmt->close();
+if ($provider === 'https://bsky.social') {
+	$query = 'SELECT id, password, iv FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('s', $body['identifier']);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+}
+else {
+	$query = 'SELECT id, password, iv FROM bbdq WHERE identifier = ? AND provider = ?';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('ss', $body['identifier'], $provider);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+}
 
 if (!$result->num_rows) {
 	// Username does not exist.

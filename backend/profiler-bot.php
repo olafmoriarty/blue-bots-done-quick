@@ -79,7 +79,7 @@ function get_external_profiles(): void {
 	while ($row = $result->fetch_assoc()) {
 		$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
 		$session = atproto_create_session($row['provider'], $row['did'], $password);
-		if (isset($session['error'])) {
+		if (!$session || isset($session['error'])) {
 			// Wrong bluesky username/password
 			continue;
 		}

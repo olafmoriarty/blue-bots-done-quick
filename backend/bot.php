@@ -26,7 +26,7 @@ function run_bot() {
 
 	$post_length = 300;
 	// Get bots
-	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2';
+	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 4 ORDER BY minutesBetweenPosts DESC, followers DESC;';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -37,8 +37,25 @@ function run_bot() {
 		return;
 	}
 
+	$start_timestamp = date('d.m.Y H:i:s');
+	$start_time = microtime( true );
+
 	while ($row = $result->fetch_assoc()) {
 		$generated = generate_post($row['script'], $row['msg'], $row['actionIfLong'] ? 0 : $post_length, $row['n_value']);
+
+		// Check that the message hasn't already been sent to avoid double-posting
+		$query = 'SELECT id FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2 AND id = ?';
+		$stmt = $conn->prepare($query);
+		$stmt->bind_param('i', $row['id']);
+		$stmt->execute();
+		$timecheck_result = $stmt->get_result();
+		$stmt->close();
+	
+		// If this query has no rows, it most likely means that a post is already posted since after $result was generated, in which case don't post again! 
+		if (!$timecheck_result->num_rows) {
+			continue;
+		}
+	
 
 		$text = '';
 		if (isset($generated) && $generated && isset($generated['text'])) {
@@ -71,7 +88,12 @@ function run_bot() {
 			'provider' => $provider,
 			'language' => $row['language'],
 		]);
+
 	}	
+	$end_time = microtime( true );
+	$diff = $end_time - $start_time;
+	error_log( 'Job initiated ' . $start_timestamp . ' completed in ' . $diff . ' seconds');
+
 }
 
 run_bot();
