@@ -184,6 +184,7 @@ function check_replies() {
 	
 			$n = $row['n_value'];
 			foreach ($replies as $reply) {
+				$generated = null;
 				if ($row['replyMode'] === 1) {
 					// Reply mode is set to custom replies
 					
