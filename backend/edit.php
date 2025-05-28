@@ -82,8 +82,8 @@ $fields_to_update = [];
 $new_values = [];
 $bind_param_string = '';
 
-$possible_fields = ['script', 'msg', 'reply', 'replyScript', 'replyMode', 'minutesBetweenPosts', 'language', 'active', 'actionIfLong', 'showSource'];
-$ints = ['minutesBetweenPosts', 'replyMode'];
+$possible_fields = ['script', 'msg', 'reply', 'replyScript', 'replyMode', 'autopostMode', 'autopostTimes', 'minutesBetweenPosts', 'language', 'active', 'actionIfLong', 'showSource'];
+$ints = ['minutesBetweenPosts', 'replyMode', 'autopostMode'];
 $bools = ['active', 'actionIfLong', 'showSource'];
 
 foreach ($possible_fields as $field) {

@@ -542,7 +542,7 @@ main .proceed button {
 	background: var(--white);
 }
 
-.reply-rule p, .reply-rule input {
+.reply-rule p, .reply-rule input, .custom-autopost-row p, .custom-autopost-row input, .custom-autopost-row select {
 	margin-bottom: 0;
 }
 
@@ -556,10 +556,58 @@ main .proceed button {
 	font-weight: bold;
 }
 
+.custom-autopost-row {
+	border: dotted 1px var(--headers);
+	padding: .5rem;
+	border-radius: .5rem;
+	margin-bottom: 1rem;
+	background: var(--yellow);
+}
+
+.custom-autopost-row > div {
+	margin-bottom: 1rem;
+}
+
+.custom-autopost-row > .custom-autopost-buttons {
+	margin-bottom: 0;
+	text-align: center;
+	color: #aa0000;
+}
+
+/* .custom-autopost-row .form-description {
+	display: none;
+} */
+
+.custom-autopost-row:focus-within .form-description, .custom-autopost-wrapper:not(:focus-within) .custom-autopost-row:first-child h5.form-description, .custom-autopost-wrapper:not(:focus-within) .custom-autopost-row:last-child p.form-description {
+	display: block;
+}
+
+h5.form-description {
+	font-size: 1rem;
+	font-weight: bold;
+	margin-bottom: .5rem;
+}
+p.form-description {
+	font-size: .9rem;
+}
+
+button.add-row {
+	width: initial;
+	margin-top: 0;
+}
+
 @media screen and (min-width: 800px) {
-	.reply-rule {
+	.reply-rule, .custom-autopost-row {
 		display: flex;
 		gap: 1rem;
+	}
+
+	.custom-autopost-row > div {
+		margin-bottom: 0;
+	}
+	
+	.custom-autopost-row {
+		align-items: flex-start;
 	}
 
 	.reply-rule-key {
@@ -569,6 +617,41 @@ main .proceed button {
 	.reply-rule-value {
 		width: calc(70% - 1rem);
 	}
+
+	.custom-autopost-mode {
+		width: 15%;
+	}
+
+
+	.custom-autopost-details {
+		width: 15%;
+	}
+
+	.custom-autopost-time {
+		width: 15%;
+	}
+
+	.custom-autopost-row[data-mode=d] .custom-autopost-mode {
+		width: calc(30% + 1rem);
+	}
+
+	.custom-autopost-row[data-mode=d] .custom-autopost-details {
+		display: none;
+	}
+
+	.custom-autopost-rule {
+		width: calc(55% - 5.5rem);
+	}
+
+	.custom-autopost-buttons {
+		width: 2rem;
+		align-self: flex-end;
+	}
+
+	.custom-autopost-buttons .link {
+		color: #aa0000;
+		font-size: 1.5rem;
+	}
 }
 
 fieldset {
@@ -577,6 +660,12 @@ fieldset {
 }
 fieldset p {
 	margin: .25rem 0;
+}
+
+.autopost-mode {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .5rem 2rem;
 }
 
 .help {
