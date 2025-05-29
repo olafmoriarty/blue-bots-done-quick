@@ -14,6 +14,7 @@ import HighlightedTextarea from './HighlightedTextarea';
 import TraceryWysiwygEditor from './TraceryWysiwigEditor';
 import phpdate from '../utils/phpdate';
 import ReplyForm from './ReplyForm';
+import AutopostSettings from './AutopostSettings';
 
 
 function EditBot(props : {demo? : boolean}) {
@@ -46,13 +47,15 @@ const defaultReplyCode = `{
 	const [reply, setReply] = useState(botSettings?.reply || '');
 	const [replyMode, setReplyMode] = useState(botSettings?.replyMode || 0);
 	const [replyScript, setReplyScript] = useState(botSettings?.replyScript || defaultReplyCode);
-	const [minutesBetweenPosts, setMinutesBetweenPosts] = useState(botSettings?.minutesBetweenPosts || 720);
+	const [minutesBetweenPosts, setMinutesBetweenPosts] = useState(typeof botSettings?.minutesBetweenPosts === "number" ? botSettings?.minutesBetweenPosts : 720);
 	const [active, setActive] = useState(botSettings?.active);
 	const [language, setLanguage] = useState(botSettings?.language || "en");
 	const [actionIfLong, setActionIfLong] = useState(botSettings?.actionIfLong || false);
 	const [showSource, setShowSource] = useState(botSettings?.showSource || false);
 	const [previewText, setPreviewText] = useState('');
 	const [replyPreviewText, setReplyPreviewText] = useState('');
+	const [autopostMode, setAutopostMode] = useState(botSettings?.autopostMode || 0);
+	const [autopostTimes, setAutopostTimes] = useState<string>(botSettings?.autopostTimes || "");
 
 	const [error, setError] = useState('');
 	const [isFetching, setIsFetching] = useState(false);
@@ -239,6 +242,8 @@ const defaultReplyCode = `{
 			reply: reply,
 			replyMode: replyMode,
 			replyScript: replyScript,
+			autopostMode: autopostMode,
+			autopostTimes: autopostTimes,
 			active: activate,
 			minutesBetweenPosts: minutesBetweenPosts,
 			language: language,
@@ -297,8 +302,42 @@ const defaultReplyCode = `{
 			</section>
 			{parsingError || !grammar ? <p className="error"><strong>Error:</strong> The JSON code you've entered is not valid.</p> : <>
 				<section className="edit-form-section">
-					<h3>Automatic posting</h3>
-					<label><p>How often do you want the bot to post?</p>
+				<h3>Origin rule</h3>
+				<p>Which Tracery rule should be posted automatically?</p>
+				<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
+				<p className="button-description">If you don't want your post to post automatically at all (e.g. only post replies), select "Never" in the Post frequency box.</p>
+
+				<div className="settings-heading">
+					<h4>Post preview</h4>
+					<p className="back"><button onClick={() => setPreviewText(grammar?.flatten(`#${origin}#`) || '')}>Reroll...</button></p>
+				</div>
+				<Preview text={previewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
+				<h4>Live preview</h4>
+				<button type="button" onClick={() => updateBot(active ? true : false, true)}>Post now</button>
+				<p className="button-description">Your bot will be saved {active ? "" : "(but not activated)"} if you click "Post now". The message posted will be generated on the server, meaning it will not match the post preview above.</p>
+				</section>
+
+				<section className="edit-form-section">
+					<h3>Posting frequency</h3>
+					<p>How often do you want the bot to post?</p>
+					<fieldset className="autopost-mode">
+					<p><label><input 
+						type="radio" 
+						name="autopostMode" 
+						value="0"
+						checked={autopostMode === 0}
+						onChange={() => setAutopostMode(0)}
+					/> At a regular interval</label></p>
+					<p><label><input 
+						type="radio" 
+						name="autopostMode" 
+						value="1"
+						checked={autopostMode === 1}
+						onChange={() => setAutopostMode(1)}
+					/> At custom times</label></p>
+					</fieldset>
+
+					{autopostMode === 1 ? <AutopostSettings autopostTimes={autopostTimes} setAutopostTimes={setAutopostTimes} originRule={origin} /> :
 					<select value={minutesBetweenPosts} onChange={(ev) => setMinutesBetweenPosts(parseInt(ev.target.value))}>
 						<option value={0}>Never</option>
 						<option value={10}>Every 10 minutes</option>
@@ -313,19 +352,8 @@ const defaultReplyCode = `{
 						<option value={1440}>Every 24 hours</option>
 						<option value={2880}>Every 48 hours</option>
 						<option value={10080}>Every week</option>
-					</select></label>
-
-					{minutesBetweenPosts ? <>
-						<p>Which Tracery rule should be posted automatically at that interval?</p>
-						<select value={origin} onChange={(ev) => setOrigin(ev.target.value)}>{Object.keys(JSON.parse(script)).map((el, index) => <option key={index}>{el}</option>)}</select>
-						<button type="button" onClick={() => updateBot(active ? true : false, true)}>Post now</button>
-						<p className="button-description">Your bot will be saved {active ? "" : "(but not activated)"} if you click "Post now". The message posted will be generated on the server, meaning it will not match the post preview below.</p>
-						<div className="settings-heading">
-							<h4>Post preview</h4>
-							<p className="back"><button onClick={() => setPreviewText(grammar?.flatten(`#${origin}#`) || '')}>Reroll...</button></p>
-						</div>
-						<Preview text={previewText} handle={botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"} avatar={botSettings?.thumb} botName={botSettings?.name} showAlts={true} />
-					</> : null}
+					</select>}
+					<p className="button-description"><strong>Note:</strong> Bots that post frequently will be less accurate than bots that post less frequently. Bots that are set to post every ten minutes may realistically only post every 15-20 minutes, while a bot that posts weekly will normally post on time every week.</p>
 				</section>
 				<section className="edit-form-section">
 					<h3>Replies</h3>

@@ -120,6 +120,8 @@ export type BotSettingsFromAPI = {
 	msg : string|null,
 	reply : string|null,
 	replyMode : number|null,
+	autopostMode : number|null,
+	autopostTimes : string|null,
 	replyScript : string|null,
 	actionIfLong : boolean,
 	showSource : boolean,

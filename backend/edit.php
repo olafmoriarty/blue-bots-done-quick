@@ -76,14 +76,24 @@ if (isset($body['minutesBetweenPosts']) && !is_int($body['minutesBetweenPosts'])
 	return_error('MINUTES_NOT_A_NUMBER');
 }
 
+// If setting autopost mode to scheduled, calculate time for next post
+if (isset($body['autopostMode']) && $body['autopostMode'] === 1 && isset($body['autopostTimes'])) {
+	$gnd = get_next_datetime($body['autopostTimes']);
+	if ($gnd) {
+		$body['nextPost'] = date('Y-m-d H:i:s', $gnd['timestamp']);
+		$body['nextPostContents'] = $gnd['rule'];
+		$body['minutesBetweenPosts'] = $gnd['minutesBetweenPosts'];
+	}
+}
+
 // All data appears to be valid, update database!
 
 $fields_to_update = [];
 $new_values = [];
 $bind_param_string = '';
 
-$possible_fields = ['script', 'msg', 'reply', 'replyScript', 'replyMode', 'minutesBetweenPosts', 'language', 'active', 'actionIfLong', 'showSource'];
-$ints = ['minutesBetweenPosts', 'replyMode'];
+$possible_fields = ['script', 'msg', 'reply', 'replyScript', 'replyMode', 'autopostMode', 'autopostTimes', 'nextPost', 'nextPostContents', 'minutesBetweenPosts', 'language', 'active', 'actionIfLong', 'showSource'];
+$ints = ['minutesBetweenPosts', 'replyMode', 'autopostMode'];
 $bools = ['active', 'actionIfLong', 'showSource'];
 
 foreach ($possible_fields as $field) {

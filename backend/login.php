@@ -17,7 +17,7 @@ if (str_starts_with($body['identifier'], '@')) {
 // Check if user exists
 
 if ($provider === 'https://bsky.social') {
-	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
+	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, autopostMode, autopostTimes, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
 	$stmt = $conn->prepare($query);
 	$stmt->bind_param('s', $body['identifier']);
 	$stmt->execute();
@@ -25,7 +25,7 @@ if ($provider === 'https://bsky.social') {
 	$stmt->close();
 }
 else {
-	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider = ?';
+	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, autopostMode, autopostTimes, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE identifier = ? AND provider = ?';
 	$stmt = $conn->prepare($query);
 	$stmt->bind_param('ss', $body['identifier'], $provider);
 	$stmt->execute();
@@ -59,6 +59,9 @@ if ($result->num_rows) {
 
 	// User authenticated, return data
 	$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
+	if ($data['autopostMode'] === 1) {
+		$data['minutesBetweenPosts'] = 720;
+	}
 	unset($data['password']);
 	unset($data['iv']);
 	$c = [
@@ -118,7 +121,7 @@ else {
 		}
 
 		// Get return values from database
-		$query = 'SELECT active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, name, thumb FROM bbdq WHERE id = ?';
+		$query = 'SELECT active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, autopostMode, autopostTimes, actionIfLong, showSource, name, thumb FROM bbdq WHERE id = ?';
 		$stmt = $conn->prepare($query);
 		$stmt->bind_param('i', $id);
 		$stmt->execute();
@@ -127,6 +130,9 @@ else {
 
 		$data = $result->fetch_assoc();
 		$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
+		if ($data['autopostMode'] === 1) {
+			$data['minutesBetweenPosts'] = 720;
+		}
 		$c = [
 			'data' => $data
 		];
