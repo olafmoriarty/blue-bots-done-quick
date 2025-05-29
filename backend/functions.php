@@ -167,3 +167,106 @@ function values_to_boolean($arr, $values) {
 	}
 	return $arr;
 }
+
+function get_next_datetime( $json ) {
+	$next_time = 0;
+	$rule = '';
+	$frequency = 0;
+
+	$current_day = gmdate('j');
+	$current_weekday = gmdate('w');
+	$current_month = gmdate('n');
+	$current_year = gmdate('Y');
+
+	$arr = json_decode( $json, true );
+
+	if (!is_array($arr)) {
+		// JSON error or invalid JSON, give up
+		return;
+	}
+
+	foreach ($arr as $row) {
+		if (!is_array($row) || !isset($row['type']) || !isset($row['time'])) {
+			// Not a valid row, don't bother trying to make sense out of it
+			continue;
+		}
+		$time_parts = explode(':', $row['time']);
+		if (!isset($time_parts[1]) || !is_numeric($time_parts[0]) || !is_numeric($time_parts[1])) {
+			// No minutes, so the time must be invalid
+			continue;
+		}
+
+		if ($row['type'] === 'd') {
+			$frequency += 1 / (24 * 60);
+			for ($day = -1; ; $day++) {
+				$row_time = gmmktime($time_parts[0], $time_parts[1], 0, $current_month, $current_day + $day, $current_year);
+				if ($row_time > time()) {
+					break;
+				}
+			}
+			if ($next_time === 0 || $row_time < $next_time) {
+				$next_time = $row_time;
+				$rule = '';
+				if (isset($row['rule'])) {
+					$rule = $row['rule'];
+				}
+			}
+		}
+		elseif ($row['type'] === 'w' && isset($row['weekdays']) && is_array($row['weekdays'])) {
+			$arr_length = count($row['weekdays']);
+			for ($i = 0; $i < $arr_length; $i++) {
+				if (!is_numeric($row['weekdays'][$i]) ) {
+					continue;
+				}
+				$frequency += 1 / (24 * 60 * 7);
+				for ($week = -1; ; $week++) {
+					$row_time = gmmktime($time_parts[0], $time_parts[1], 0, $current_month, $current_day - $current_weekday + $row['weekdays'][$i] + ($week * 7), $current_year);
+					if ($row_time > time()) {
+						break;
+					}
+				}
+				if ($next_time === 0 || $row_time < $next_time) {
+					$next_time = $row_time;
+					$rule = '';
+					if (isset($row['rule'])) {
+						$rule = $row['rule'];
+					}
+				}
+			}
+		}
+		elseif ($row['type'] === 'm' && isset($row['monthdays'])) {
+			$arr = explode(',', $row['monthdays']);
+			$arr_length = count($arr);
+			for ($i = 0; $i < $arr_length; $i++) {
+				$num = trim($arr[$i]);
+				if (!is_numeric($num) ) {
+					continue;
+				}
+				$frequency += 1 / (24 * 60 * 30);
+				for ($month = -1; ; $month++) {
+					$row_time = gmmktime($time_parts[0], $time_parts[1], 0, $current_month + $month, $num, $current_year);
+					if ($row_time > time()) {
+						break;
+					}
+				}
+				if ($next_time === 0 || $row_time < $next_time) {
+					$next_time = $row_time;
+					$rule = '';
+					if (isset($row['rule'])) {
+						$rule = $row['rule'];
+					}
+				}
+			}
+		}
+	}
+
+	if (!$next_time) {
+		return;
+	}
+
+	return [
+		'timestamp' => $next_time,
+		'rule' => $rule,
+		'minutesBetweenPosts' => 1 / $frequency,
+	];
+}

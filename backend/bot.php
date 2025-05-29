@@ -25,8 +25,10 @@ function run_bot() {
 	global $encryption_key;
 
 	$post_length = 300;
+	$timezone = ini_get('date.timezone');
+
 	// Get bots
-	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 4 ORDER BY minutesBetweenPosts DESC, followers DESC;';
+	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value, autopostMode, autopostTimes, nextPostContents FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND ((autopostMode = 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 4) OR (autopostMode = 1 AND NOW() >= nextPost)) ORDER BY minutesBetweenPosts DESC, followers DESC;';
 	$stmt = $conn->prepare($query);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -41,10 +43,15 @@ function run_bot() {
 	$start_time = microtime( true );
 
 	while ($row = $result->fetch_assoc()) {
-		$generated = generate_post($row['script'], $row['msg'], $row['actionIfLong'] ? 0 : $post_length, $row['n_value']);
+		if ($row['autopostMode'] === 1) {
+			$generated = generate_post($row['script'], '', $row['actionIfLong'] ? 0 : $post_length, $row['n_value'], $row['nextPostContents']);
+		}
+		else {
+			$generated = generate_post($row['script'], $row['msg'], $row['actionIfLong'] ? 0 : $post_length, $row['n_value']);
+		}
 
 		// Check that the message hasn't already been sent to avoid double-posting
-		$query = 'SELECT id FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 2 AND id = ?';
+		$query = 'SELECT id FROM bbdq WHERE active = 1 AND minutesBetweenPosts > 0 AND ((autopostMode = 0 AND TIMESTAMPDIFF(MINUTE, lastPost, NOW()) >= minutesBetweenPosts - 4) OR (autopostMode = 1 AND NOW() >= nextPost)) AND id = ?';
 		$stmt = $conn->prepare($query);
 		$stmt->bind_param('i', $row['id']);
 		$stmt->execute();
@@ -77,9 +84,23 @@ function run_bot() {
 		if ($generated['increase_n']) {
 			$query .= ', n_value = n_value + 1';
 		}
+		$gnd = null;
+		if ($row['autopostMode'] === 1) {
+			$gnd = get_next_datetime($row['autopostTimes']);
+			if ($gnd) {
+				$query .= ', nextPost = ?, nextPostContents = ?, minutesBetweenPosts = ?';
+				date_default_timezone_set($timezone);
+				$nextPost = date('Y-m-d H:i:s', $gnd['timestamp']);
+			}
+		}
 		$query .= ' WHERE id = ?';
 		$stmt = $conn->prepare($query);
-		$stmt->bind_param('si', $text, $row['id']);
+		if ($gnd) {
+			$stmt->bind_param('sssii', $text, $nextPost, $gnd['rule'], $gnd['minutesBetweenPosts'], $row['id']);
+		}
+		else {
+			$stmt->bind_param('si', $text, $row['id']);
+		}
 		$stmt->execute();
 		$stmt->close();
 
@@ -93,7 +114,6 @@ function run_bot() {
 	$end_time = microtime( true );
 	$diff = $end_time - $start_time;
 	error_log( 'Job initiated ' . $start_timestamp . ' completed in ' . $diff . ' seconds');
-
 }
 
 run_bot();

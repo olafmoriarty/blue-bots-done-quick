@@ -65,7 +65,6 @@ const AutopostSettings = (props : Props) => {
 	const setAutopostRows = ( value : CustomAutopostRow[] ) => {
 		const convertedValue = [ ...value ].map(el => el.time ? { ...el, time: timePlusOffset(el.time) } : el);
 		const json = JSON.stringify(convertedValue);
-		console.log(json);
 		setAutopostTimes(json);
 	}
 
@@ -128,7 +127,7 @@ const AutopostSettings = (props : Props) => {
 						<label>
 							<h5 className="form-description">Dates</h5>
 							<input type="text" value={row.monthdays || ""} onChange={(ev) => updateField(index, "monthdays", ev.target.value)} />
-							<p className="form-description">E.g. "7" or "7,14,21,28"</p>
+							<p className="form-description">E.g. "7" or "7,14,21,28".</p>
 						</label> 
 					</>
 				: null}</div>
@@ -141,7 +140,8 @@ const AutopostSettings = (props : Props) => {
 				<div className="custom-autopost-rule">
 					<label>
 						<h5 className="form-description">Tracery rule</h5>
-						<input type="text" placeholder="#origin#" value={row.rule} onChange={(ev) => updateField(index, "rule", ev.target.value)} />
+						<input type="text" placeholder={`#${props.originRule}#`} value={row.rule} onChange={(ev) => updateField(index, "rule", ev.target.value)} />
+						<p className="form-description">If you leave this field blank, <strong>#{props.originRule}#</strong> will be posted.</p>
 					</label>
 				</div>
 				<div className="custom-autopost-buttons"><button className="link" onClick={() => deleteRow(index)}><Icon icon={faTrash} /></button></div>
@@ -153,6 +153,7 @@ const AutopostSettings = (props : Props) => {
 }
 
 type Props = {
+	originRule : string,
 	autopostTimes : string,
 	setAutopostTimes : (rows : string) => void,
 }

@@ -337,7 +337,7 @@ const defaultReplyCode = `{
 					/> At custom times</label></p>
 					</fieldset>
 
-					{autopostMode === 1 ? <AutopostSettings autopostTimes={autopostTimes} setAutopostTimes={setAutopostTimes} /> :
+					{autopostMode === 1 ? <AutopostSettings autopostTimes={autopostTimes} setAutopostTimes={setAutopostTimes} originRule={origin} /> :
 					<select value={minutesBetweenPosts} onChange={(ev) => setMinutesBetweenPosts(parseInt(ev.target.value))}>
 						<option value={0}>Never</option>
 						<option value={10}>Every 10 minutes</option>
@@ -353,6 +353,7 @@ const defaultReplyCode = `{
 						<option value={2880}>Every 48 hours</option>
 						<option value={10080}>Every week</option>
 					</select>}
+					<p className="button-description"><strong>Note:</strong> Bots that post frequently will be less accurate than bots that post less frequently. Bots that are set to post every ten minutes may realistically only post every 15-20 minutes, while a bot that posts weekly will normally post on time every week.</p>
 				</section>
 				<section className="edit-form-section">
 					<h3>Replies</h3>

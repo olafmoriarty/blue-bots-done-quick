@@ -59,6 +59,9 @@ if ($result->num_rows) {
 
 	// User authenticated, return data
 	$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
+	if ($data['autopostMode'] === 1) {
+		$data['minutesBetweenPosts'] = 720;
+	}
 	unset($data['password']);
 	unset($data['iv']);
 	$c = [
@@ -127,6 +130,9 @@ else {
 
 		$data = $result->fetch_assoc();
 		$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource']);
+		if ($data['autopostMode'] === 1) {
+			$data['minutesBetweenPosts'] = 720;
+		}
 		$c = [
 			'data' => $data
 		];
