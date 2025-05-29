@@ -43,7 +43,7 @@ function run_bot() {
 	$start_time = microtime( true );
 
 	while ($row = $result->fetch_assoc()) {
-		if ($row['autopostMode'] === 1) {
+		if ($row['autopostMode'] === 1 && $row['nextPostContents']) {
 			$generated = generate_post($row['script'], '', $row['actionIfLong'] ? 0 : $post_length, $row['n_value'], $row['nextPostContents']);
 		}
 		else {
