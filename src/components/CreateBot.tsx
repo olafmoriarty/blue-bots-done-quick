@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePage } from "../context/PageContext";
 import { Link } from "react-router-dom";
+import Title from "./Title";
 
 const CreateBot = () => {
 	const {attemptLogin, isWorking} = usePage(); 
@@ -65,6 +66,7 @@ const CreateBot = () => {
 
 	return (
 		<main>
+			<Title>Create a bot</Title>
 			<div className="create-bot">
 				<h2>Create a bot</h2>
 				{steps[step]}

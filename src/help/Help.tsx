@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import highlightJson from "../utils/highlightJson";
 import TraceryWysiwygEditor from "../components/TraceryWysiwigEditor";
 import { useState } from "react";
+import Title from "../components/Title";
 
 const Help = () => {
 	const params = useParams();
@@ -10,6 +11,7 @@ const Help = () => {
 	const [wysiwygExample, setWysiwygExample] = useState("{\n\t\"origin\": [\"#quotes#\"],\n\t\"quotes\": [\n\t\t\"A hug is always the right size.\",\n\t\t\"Sometimes the smallest things take up the most room in your heart.\",\n\t\t\"It is more fun to talk with someone who doesn’t use long, difficult words but rather short, easy words like, \\\"What about lunch?\\\"\",\n\t\t\"People say nothing is impossible, but I do nothing every day.\",\n\t\t\"Rivers know this: There is no hurry. We shall get there some day.\",\n\t\t\"I'm so rumbly in my tumbly.\"\n\t]\n}");
 
 	let content = <>
+		<Title>Help</Title>
 		<h2>BBDQ Help</h2>
 		<ul>
 		<li><Link to="/help/editor/">How to use editor view</Link></li>
@@ -49,6 +51,7 @@ const Help = () => {
 	}
 	if (page === 'codes') {
 		content = <>
+			<Title>List of shortcodes</Title>
 			<h2>Shortcodes</h2>
 			<h3><code>{"{img}"}</code>: Images</h3>
 			<p>Use <code><strong>{"{img [url]}"}</strong></code> or <code><strong>{"{img [url] [alt-text]}"}</strong></code> to insert an image:</p>
@@ -121,6 +124,7 @@ const Help = () => {
 	
 	if (page === 'editor') {
 		content = <>
+			<Title>How to use the editor</Title>
 			<h2>Editor view</h2>
 			<p>BBDQ's Editor view is an attempt at creating a method of making it easier to generate Tracery code without having to edit the JSON directly. The code is still saved as JSON, and if you want to, you can click the JSON tab at any time to edit it directly.</p>
 			<p>Advanced users may still prefer to stick to JSON view, but if you don't have a lot of programming experience and you just want to build a simple quote bot, this is the easiest way to do so.</p>

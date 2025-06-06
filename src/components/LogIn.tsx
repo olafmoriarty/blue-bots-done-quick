@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePage } from "../context/PageContext";
 import ErrorMessage from "./ErrorMessage";
 import { Link } from "react-router-dom";
+import Title from "./Title";
 
 const LogIn = () => {
 	const {error, loginDetails, attemptLogin, isWorking} = usePage();
@@ -21,6 +22,7 @@ const LogIn = () => {
 
 	return (
 		<main>
+			<Title>Log in</Title>
 			<h2>Log in</h2>
 			<ErrorMessage error={error} />
 			<form onSubmit={(ev) => {

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import BotPreviewType from "../types/BotPreviewType";
 import { usePage } from "../context/PageContext";
 import BotPreview from "./BotPreview";
+import Title from "./Title";
 
 const Source = () => {
 	const params = useParams();
@@ -29,6 +30,7 @@ const Source = () => {
 
 	if (!identifier) {
 		return <main>
+			<Title>Bot not found</Title>
 			<h2>What are you looking for?</h2>
 			<p>No bot identifier specified.</p>
 			<p><Link to="/bots/">Back to bot list</Link></p>
@@ -38,6 +40,7 @@ const Source = () => {
 	
 	if (data === undefined) {
 		return <main>
+			<Title>{identifier}</Title>
 			<h2>{identifier}</h2>
 			<p className="loading">Loading information...</p>
 		</main>
@@ -45,7 +48,7 @@ const Source = () => {
 
 	if (data.length < 1) {
 		return <main>
-			<h2>Bot not found?</h2>
+			<Title>Bot not found</Title>
 			<p>Sorry, I could not find a bot with the handle <strong>{identifier}</strong>.</p>
 			<p><Link to="/bots/">Back to bot list</Link></p>
 			<p><Link to="/">Back to front page</Link></p>
@@ -59,6 +62,7 @@ const Source = () => {
 
 	return (
 		<main>
+			<Title>{el.name || identifier}</Title>
 			<h2>{el.name || identifier}</h2>
 			<p><a href={`https://bsky.app/profile/${el.did}`} className="button" target="_blank">{identifier}</a></p>
 			<h3>Last post generated</h3>

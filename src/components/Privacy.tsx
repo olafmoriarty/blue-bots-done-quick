@@ -1,6 +1,9 @@
+import Title from "./Title";
+
 const Privacy = () => {
 	return (
 		<main>
+			<Title>Privacy policy</Title>
 			<h2>Terms of use</h2>
 			<p>Follow the terms of Bluesky. Don't be an asshole. Don't use this tool to be an asshole. Use common sense. Apart from that, have fun!</p>
 			<h2>Cookies</h2>

@@ -15,6 +15,7 @@ import TraceryWysiwygEditor from './TraceryWysiwigEditor';
 import phpdate from '../utils/phpdate';
 import ReplyForm from './ReplyForm';
 import AutopostSettings from './AutopostSettings';
+import Title from './Title';
 
 
 function EditBot(props : {demo? : boolean}) {
@@ -268,6 +269,7 @@ const defaultReplyCode = `{
 
 	return (
 		<main className="main-content edit-bot">
+			<Title>{props.demo ? "Demo" : `Edit bot ${botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"}`}</Title>
 			{loginDetails && botSettings ? null : <p className="error">This is just a demo! You can experiment with these settings as much as you want to get an impression of how this website works, but you won't actually be able to save anything. To go back to the frontpage and create a bot, <Link to="/">click here</Link>.</p>}
 			<section className="settings-heading">
 			<h2>Edit {botSettings?.identifier || loginDetails?.identifier || "bbdqtestbot.bsky.social"}</h2>
