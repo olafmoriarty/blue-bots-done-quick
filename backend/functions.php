@@ -57,6 +57,9 @@ function fetch($url, $options = []) {
 	$response = curl_exec($curl);
 	
 	curl_close($curl);
+	if (isset($options['format']) && $options['format'] === 'html') {
+		return $response;
+	}
 	return json_decode( $response, true );
 }
 
@@ -269,4 +272,38 @@ function get_next_datetime( $json ) {
 		'rule' => $rule,
 		'minutesBetweenPosts' => 1 / $frequency,
 	];
+}
+
+function get_html_head_tags( $url ) {
+	$return_array = [ 'url' => $url ];
+	
+	$text = fetch($url, ['format' => 'html']);
+	$head = preg_match('/\<head\>(.*)\<\/head\>/s', $text, $head_tags);
+	if (!$head) {
+		return $return_array;
+	}
+	$return_array['title'] = $url;
+	$title_match = preg_match('/\<title\>([^<]+)\<\/title\>/', $head_tags[1], $title_array);
+	if ($title_match && $title_array[1]) {
+		$return_array['title'] = $title_array[1];
+	}
+
+	$matches = preg_match_all('/<meta ([^>]+)>/', $head_tags[1], $head_array);
+	if (!$matches) {
+		return $return_array;
+	}
+	foreach ($head_array[1] as $attributes) {
+		$attributes_array = explode(' ', $attributes);
+		$attribute_ass_arr = [];
+		foreach ($attributes_array as $attr) {
+			$attr_match = preg_match('/^([a-z:]+)=\"(.*)\"$/', $attr, $matches);
+			if ($attr_match) {
+				$attribute_ass_arr[$matches[1]] = $matches[2];
+			}
+		}
+		if (isset($attribute_ass_arr['property']) && isset($attribute_ass_arr['content'])) {
+			$return_array[$attribute_ass_arr['property']] = $attribute_ass_arr['content'];
+		}
+	}
+	return $return_array;
 }
