@@ -298,6 +298,7 @@ function post_bsky_thread($text, $session, $options = []) {
 
 		// Add rich text facets
 		$facets = detectFacets($texts[$i]);
+		$first_link = '';
 		if ($facets) {
 			$facet_count = count($facets);
 			for ($f = 0; $f < $facet_count; $f++) {
@@ -313,8 +314,51 @@ function post_bsky_thread($text, $session, $options = []) {
 						$facets[$f]['features'][0]['did'] = $profile['did'];
 					}
 				}
+
+				if (!count($blobs) && !$first_link && $facets[$f]['features'][0]['$type'] === 'app.bsky.richtext.facet#link') {
+					$first_link = $facets[$f]['features'][0]['uri'];
+				}
 			}
 			$record['facets'] = $facets;
+		}
+
+		// Should we add a link card?
+		if ($first_link && !count($blobs)) {
+			// Get metadata
+			$link_metadata = get_html_head_tags( $first_link );
+
+			$title = $first_link;
+			if (isset($link_metadata['og:title'])) {
+				$title = $link_metadata['og:title'];
+			}
+			elseif (isset($link_metadata['title'])) {
+				$title = $link_metadata['title'];
+			}
+
+			$description = '';
+			if (isset($link_metadata['og:description'])) {
+				$description = $link_metadata['og:description'];
+			}
+			elseif (isset($link_metadata['description'])) {
+				$description = $link_metadata['description'];
+			}
+
+			$record['embed'] = [
+				'$type' => 'app.bsky.embed.external',
+				'external' => [
+					'uri' => $first_link,
+					'title' => $title,
+					'description' => $description,
+				],
+			];
+
+			$thumb = null;
+			if (isset($link_metadata['og:image'])) {
+				$thumb = upload_blob_from_url($link_metadata['og:image'], $provider, $session['accessJwt']);
+				if ($thumb && isset($thumb['blob'])) {
+					$record['embed']['external']['thumb'] = $thumb['blob'];
+				}
+			}
 		}
 
 		// Add post to thread
@@ -382,12 +426,17 @@ function upload_blob_from_url( $url, $provider, $token ) {
 			CURLOPT_TIMEOUT => 0,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
 		));
 
 		curl_setopt($curl, CURLOPT_HTTPGET, true);
 
 		$image = curl_exec($curl);
 		$content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
+
+		if ($content_type !== 'image/jpeg' && $content_type !== 'image/png') {
+			return;
+		}
 
 		// Get image dimensions
 		$image_size = getimagesize('data:' . $content_type . ';base64, ' . base64_encode($image));
@@ -417,6 +466,7 @@ function upload_blob_from_url( $url, $provider, $token ) {
 			CURLOPT_TIMEOUT => 0,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
 
 			CURLOPT_HTTPHEADER => $headers,
 		));
@@ -482,6 +532,7 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 			CURLOPT_TIMEOUT => 0,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
 
 			CURLOPT_HTTPHEADER => $headers,
 		));

@@ -38,7 +38,7 @@ function fetch($url, $options = []) {
 		CURLOPT_TIMEOUT => 0,
 		CURLOPT_FOLLOWLOCATION => true,
 		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-
+		CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
 		CURLOPT_HTTPHEADER => $headers,
 	));
 
@@ -293,16 +293,10 @@ function get_html_head_tags( $url ) {
 		return $return_array;
 	}
 	foreach ($head_array[1] as $attributes) {
-		$attributes_array = explode(' ', $attributes);
-		$attribute_ass_arr = [];
-		foreach ($attributes_array as $attr) {
-			$attr_match = preg_match('/^([a-z:]+)=\"(.*)\"$/', $attr, $matches);
-			if ($attr_match) {
-				$attribute_ass_arr[$matches[1]] = $matches[2];
-			}
-		}
-		if (isset($attribute_ass_arr['property']) && isset($attribute_ass_arr['content'])) {
-			$return_array[$attribute_ass_arr['property']] = $attribute_ass_arr['content'];
+		$property = preg_match('/(?:property|name)=\"([^"]*[^\"])\"/', $attributes, $property_arr);
+		$content = preg_match('/content=\"([^"]*[^\"])\"/', $attributes, $content_arr);
+		if ($property && $content) {
+			$return_array[$property_arr[1]] = $content_arr[1];
 		}
 	}
 	return $return_array;
