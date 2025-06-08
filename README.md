@@ -11,49 +11,10 @@ Think you can do better? You probably can! Feel free to borrow or steal as much 
 ## Installation
 The frontend is written in React using TypeScript and Vite. The backend is written in PHP with a MySQL database.
 
-### Database setup
-Create a MySQL database and install the following table:
-
-```
-CREATE TABLE `bbdq` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `active` smallint(1) NOT NULL DEFAULT 0,
-  `provider` varchar(255) NOT NULL,
-  `did` varchar(255) NOT NULL,
-  `identifier` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `accessJwt` TEXT NULL,
-  `accessJwt_time` DATETIME NULL,
-  `refreshJwt` TEXT NULL,
-  `refreshJwt_time` DATETIME NULL,
-  `iv` varchar(32) NOT NULL,
-  `script` mediumtext DEFAULT NULL,
-  `language` varchar(2) NOT NULL DEFAULT 'en',
-  `lastPost` datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
-  `lastPostText` text DEFAULT NULL,
-  `n_value` int(10) NOT NULL DEFAULT 0,
-  `lastNotification` varchar(32) NOT NULL DEFAULT '',
-  `minutesBetweenPosts` int(10) DEFAULT NULL,
-  `msg` varchar(255) DEFAULT NULL,
-  `reply` varchar(255) DEFAULT NULL,
-  `replyMode` tinyint(1) NOT NULL DEFAULT '0',
-  `replyScript` mediumtext DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `thumb` varchar(255) DEFAULT NULL,
-  `followers` int(10) DEFAULT NULL,
-  `activeSince` datetime DEFAULT NULL,
-  `actionIfLong` smallint(1) NOT NULL DEFAULT 0,
-  `showSource` smallint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `did` (`did`),
-  KEY `identifier` (`identifier`,`provider`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_danish_ci
-```
-
-(You can use a differend utf8mb4 collation if you want to, of course.)
-
 ### Backend
 In the `backend` folder, create a file named `secrets.php`. For security reasons this file is not included in the repo, but you can use the `secrets-template.php` file as a template on how to fill it in.
+
+Set up a MySQL database and add its hostname, database name, username and password to `secrets.php`. After doing that, open `backend/install-mysql.php` in a browser to generate the MySQL table used in the bot. This file should be run on first install and whenever you update BBDQ to a newer version.
 
 Set up a cron job that runs `bot.php` every five minutes, another cron job that runs `reply-bot.php` every five minutes, a third cron job that runs `profiler-bot.php` as often as you wish to fetch avatars, display names and follower counts (mine runs once an hour).
 
