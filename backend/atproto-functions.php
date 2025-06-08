@@ -426,11 +426,14 @@ function upload_blob_from_url( $url, $provider, $token ) {
 			CURLOPT_TIMEOUT => 0,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
 		));
 
 		curl_setopt($curl, CURLOPT_HTTPGET, true);
 
+		if (!str_contains($url, 'twimg')) {
+			curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)');
+		}
+		
 		$image = curl_exec($curl);
 		$content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
 
@@ -466,14 +469,16 @@ function upload_blob_from_url( $url, $provider, $token ) {
 			CURLOPT_TIMEOUT => 0,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
-
 			CURLOPT_HTTPHEADER => $headers,
 		));
 
 		curl_setopt($curl, CURLOPT_POST, true);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $image);
 
+		if (!str_contains($url, 'twimg')) {
+			curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)');
+		}
+		
 		$response = curl_exec($curl);
 		
 		curl_close($curl);
@@ -532,14 +537,16 @@ function upload_blob_from_svg( $svg, $provider, $token ) {
 			CURLOPT_TIMEOUT => 0,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
-
 			CURLOPT_HTTPHEADER => $headers,
 		));
 
 		curl_setopt($curl, CURLOPT_POST, true);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $image);
 
+		if (!str_contains($url, 'twimg')) {
+			curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)');
+		}
+		
 		$response = curl_exec($curl);
 		
 		curl_close($curl);

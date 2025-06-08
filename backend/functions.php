@@ -38,7 +38,6 @@ function fetch($url, $options = []) {
 		CURLOPT_TIMEOUT => 0,
 		CURLOPT_FOLLOWLOCATION => true,
 		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		CURLOPT_USERAGENT => 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)',
 		CURLOPT_HTTPHEADER => $headers,
 	));
 
@@ -46,6 +45,10 @@ function fetch($url, $options = []) {
 		curl_setopt($curl, CURLOPT_HTTPGET, true);
 	}
 
+	if (!str_contains($url, 'twimg')) {
+		curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)');
+	}
+	
 	if ($method === 'POST') {
 		// If POST (for now, let's assume it's always POST)
 		curl_setopt($curl, CURLOPT_POST, true);
@@ -300,4 +303,15 @@ function get_html_head_tags( $url ) {
 		}
 	}
 	return $return_array;
+}
+
+function deactivate_bot( $conn, $id ) {
+	if (!$id || !is_numeric($id)) {
+		return;
+	}
+	$query = 'UPDATE bbdq SET active = 0 WHERE id = ?';
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param('i', $id);
+	$stmt->execute();
+	$stmt->close();
 }
