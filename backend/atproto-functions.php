@@ -30,6 +30,10 @@ function atproto_session($conn, $encryption_key, $id) {
 
 	$row = $result->fetch_assoc();
 
+	$breaking_errors = [
+		'RateLimitExceeded', 'AuthenticationRequired', 'AccountTakedown', 'InvalidRequest',
+	];
+
 	// Is the access token still valid?
 	if ($row['accessJwt_time_left'] > 5) {
 		$access_token = openssl_decrypt($row['accessJwt'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
@@ -56,6 +60,9 @@ function atproto_session($conn, $encryption_key, $id) {
 		]);
 
 		if (isset($session['error'])) {
+			if (in_array($session['error'], $breaking_errors)) {
+				deactivate_bot($conn, $row['id']);
+			}
 			$error_message = date('d.m.Y, H:i:s') . ' - Error from com.atproto.server.refreshSession (user ' . $row['id'] . '): ' . $session['error'];
 			if (isset($session['message'])) {
 				$error_message .= ' - ' . $session['message'];
@@ -94,6 +101,9 @@ function atproto_session($conn, $encryption_key, $id) {
 	]);
 
 	if (isset($session['error'])) {
+		if (in_array($session['error'], $breaking_errors)) {
+			deactivate_bot($conn, $row['id']);
+		}
 		$error_message = date('d.m.Y, H:i:s') . ' - Error from com.atproto.server.createSession (user ' . $row['id'] . '): ' . $session['error'];
 		if (isset($session['message'])) {
 			$error_message .= ' - ' . $session['message'];
