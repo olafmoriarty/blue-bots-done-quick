@@ -45,7 +45,7 @@ $rows = [
 	"`activeSince` datetime DEFAULT NULL",
 	"`actionIfLong` smallint(1) NOT NULL DEFAULT 0",
 	"`showSource` smallint(1) NOT NULL DEFAULT 0",
-	"`showOnBotList` smallint(1) NOT NULL DEFAULT 0",
+	"`hideOnBotList` smallint(1) NOT NULL DEFAULT 0",
 ];
 
 // Check if bbdq table exists

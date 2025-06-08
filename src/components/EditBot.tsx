@@ -53,6 +53,7 @@ const defaultReplyCode = `{
 	const [language, setLanguage] = useState(botSettings?.language || "en");
 	const [actionIfLong, setActionIfLong] = useState(botSettings?.actionIfLong || false);
 	const [showSource, setShowSource] = useState(botSettings?.showSource || false);
+	const [hideOnBotList, setHideOnBotList] = useState(botSettings?.hideOnBotList || false);
 	const [previewText, setPreviewText] = useState('');
 	const [replyPreviewText, setReplyPreviewText] = useState('');
 	const [autopostMode, setAutopostMode] = useState(botSettings?.autopostMode || 0);
@@ -250,6 +251,7 @@ const defaultReplyCode = `{
 			language: language,
 			actionIfLong: actionIfLong,
 			showSource: showSource,
+			hideOnBotList: hideOnBotList,
 			postNow: postNow ? true : false,
 		});
 		const res = await fetch( backendURI, {
@@ -402,7 +404,9 @@ const defaultReplyCode = `{
 				<section className="edit-form-section">
 					<h3>Settings</h3>
 
-					<p><label><input type="checkbox" checked={showSource} onChange={() => setShowSource(old => !old)}  /> Allow other users to read the source code of my bot</label></p>
+					<p><label><input type="checkbox" checked={hideOnBotList} onChange={() => setHideOnBotList(old => !old)}  /> Do not show this bot on the bot list</label></p>
+
+					{hideOnBotList ? null : <p><label><input type="checkbox" checked={showSource} onChange={() => setShowSource(old => !old)}  /> Allow other users to read the source code of my bot</label></p>}
 					<h4>Post language</h4>
 					<select value={language} onChange={(ev) => setLanguage(ev.target.value)}>
 						{languages.sort((a, b) => a.name < b.name ? -1 : 1).map(el => <option value={el.code} key={el.code}>{el.name}</option>)}

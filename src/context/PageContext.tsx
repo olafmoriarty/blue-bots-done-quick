@@ -125,6 +125,7 @@ export type BotSettingsFromAPI = {
 	replyScript : string|null,
 	actionIfLong : boolean,
 	showSource : boolean,
+	hideOnBotList : boolean,
 	name? : string,
 	thumb? : string,
 }

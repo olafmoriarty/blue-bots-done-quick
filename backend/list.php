@@ -33,7 +33,7 @@ if (isset($body['handle'])) {
 
 
 
-$query = 'SELECT name, did, identifier, lastPostText, thumb, script, showSource, followers, activeSince FROM bbdq WHERE active = 1';
+$query = 'SELECT name, did, identifier, lastPostText, thumb, script, showSource, followers, activeSince FROM bbdq WHERE active = 1 AND hideOnBotList = 0';
 if ($handle) {
 	$query .= ' AND identifier = ?';
 }
