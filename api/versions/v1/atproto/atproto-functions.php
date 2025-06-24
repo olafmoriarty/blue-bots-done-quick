@@ -1,5 +1,5 @@
 <?php
-include('atproto-rich-text.php');
+include API_FOLDER . '/atproto/atproto-rich-text.php';
 
 // Create ATProto session
 function atproto_create_session($provider, $identifier, $password) {

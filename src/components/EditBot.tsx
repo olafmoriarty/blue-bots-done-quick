@@ -221,7 +221,7 @@ const defaultReplyCode = `{
 	}
 
 	const updateBot = async (activate : boolean, postNow? : boolean) => {
-		if (!loginDetails) {
+		if (!loginDetails || !botSettings?.id) {
 			return;
 		}
 		setError('');
@@ -235,7 +235,6 @@ const defaultReplyCode = `{
 		}
 
 		const body = JSON.stringify({
-			mode: 'edit',
 			provider: loginDetails.provider,
 			identifier: loginDetails.identifier,
 			password: loginDetails.password,
@@ -254,7 +253,7 @@ const defaultReplyCode = `{
 			hideOnBotList: hideOnBotList,
 			postNow: postNow ? true : false,
 		});
-		const res = await fetch( backendURI, {
+		const res = await fetch( `${backendURI}/bots/${botSettings.id}/`, {
 			method: 'PATCH',
 			body: body,
 			headers: {

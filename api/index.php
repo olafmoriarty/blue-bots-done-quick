@@ -1,55 +1,56 @@
 <?php
 
-// Get MySQL and Bluesky login details
-global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-include 'secrets.php';
-include 'functions.php';
-
-// Connect to MySQL
-$conn = mysqli_connect(
-	$mysql_host, 
-	$mysql_user,
-	$mysql_pass,
-	$mysql_db
-);
-
-// Return empty response on preflight check
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-	return_json([]);
+// Get URL
+$url = substr($_SERVER['REQUEST_URI'], strlen( dirname($_SERVER['PHP_SELF'])));
+if ($question_mark_position = strpos( $url , '?')) {
+	$url = substr($url, 0, $question_mark_position);
 }
 
-// Get body content - either from $_GET or from php://input
-$body = [];
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-	$body = $_GET;
+// Get API version number
+$version = strtok($url, '/');
+
+// Hard-coded list of API versions
+$valid_versions = [ 'v1' ];
+
+// If version exists, include it
+if ( in_array($version, $valid_versions) ) {
+	include( 'versions/' . $version . '/index.php' );
+	exit;
+}
+
+// If not, return an error
+
+// Set HTTP headers
+header('Content-Type: application/json');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Headers: Accept, Content-Type, Authorization');
+header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
+
+$okOrigins = [
+	'bluebotsdonequick.com',
+	'www.bluebotsdonequick.com',
+	'localhost',
+];
+if (isset($_SERVER['HTTP_REFERER'])) {
+	$url_host = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+}
+if (isset($url_host) && in_array($url_host, $okOrigins)) {
+	$origin = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_SCHEME) . '://' . $url_host;
+	if ($url_host == 'localhost') {
+		$origin .= ':' . parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PORT);
+	}
 }
 else {
-	$body = json_decode(file_get_contents("php://input"), true);
+	$origin = 'https://bluebotsdonequick.com';
 }
+header('Access-Control-Allow-Origin: ' . $origin);
 
-// Since this is such a simple script, I'm using the 'mode' parameter of the 
-// body instead of URL-based endpoints. If the API grows, I may reconsider this.
-if (!isset($body['mode']) || !$body['mode']) {
-	return_error('NO_ENDPOINT_SELECTED');
-}
+// Set HTTP status
+header("HTTP/1.1 404 Not Found");
 
-$endpoint = $body['mode'];
-
-// List of valid endpoints
-$valid_endpoints = ['login', 'edit', 'delete', 'list'];
-
-if (!in_array($endpoint, $valid_endpoints)) {
-	return_error('INVALID_ENDPOINT', '404');
-}
-
-include $endpoint . '.php';
-	// Check username and password against bsky
-	// Return error if auth failed
-
-	// If success:
-	// Check that all required fields are present
-	// Return error if required fields are missing
-	// Return error if not valid JSON
-	// Encrypt password
-	// Save row to database
-
+// Output content as JSON
+echo json_encode([
+	'status' => 0,
+	'error' => 'INVALID_VERSION',
+]);
+exit;

@@ -3,9 +3,9 @@
 
 // Get MySQL and Bluesky login details
 global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-include('secrets.php');
+include '../secrets.php';
 // Get fetch function
-include('functions.php');
+include '../utils/functions.php';
 
 // Connect to MySQL
 $conn = mysqli_connect(

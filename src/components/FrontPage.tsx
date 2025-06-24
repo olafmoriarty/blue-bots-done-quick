@@ -18,12 +18,12 @@ const FrontPage = () => {
 	}, []);
 
 	const getBots = async (sort? : string, limit = 20) => {
-		let queryString = '';
+		let queryString = '?';
 		if (sort === 'activeSince') {
-			queryString += '&sort=activeSince';
+			queryString += 'sort=activeSince&';
 		}
-		queryString += '&count=' + limit;
-		const res = await fetch( backendURI + '?mode=list' + queryString );
+		queryString += 'count=' + limit;
+		const res = await fetch( `${backendURI}/bots/${queryString}` );
 		const json = await res.json();
 		return json.data;
 	}
@@ -59,7 +59,7 @@ const FrontPage = () => {
 			</section>
 			<p className="back"><Link to="/demo">View a demo</Link></p>
 			{
-				popularBots.length ?
+				popularBots?.length ?
 				<>
 					<div className="front-page-columns">
 

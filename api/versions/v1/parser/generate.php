@@ -1,7 +1,7 @@
 <?php
 
 // Get Tracery parser
-include('tracery-parser.php');
+include 'tracery-parser.php';
 
 function generate_post($script, $origin, $max_length = 0, $n_input = 0, $full_input = '') {
 	$tracery = new Tracery;

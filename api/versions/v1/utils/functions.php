@@ -1,5 +1,9 @@
 <?php
-include('atproto-functions.php');
+include API_FOLDER . '/atproto/atproto-functions.php';
+
+function load_function( $function_name ) {
+	include_once( API_FOLDER . '/utils/' . $function_name . '.php' );
+}
 
 // Simplified function to send a CURL post request
 function fetch($url, $options = []) {
@@ -169,7 +173,9 @@ function values_to_boolean($arr, $values) {
 		$values = [$values];
 	}
 	foreach ($values as $parameter) {
-		$arr[$parameter] = (bool) $arr[$parameter];
+		if (isset($arr[$parameter])) {
+			$arr[$parameter] = (bool) $arr[$parameter];
+		}
 	}
 	return $arr;
 }

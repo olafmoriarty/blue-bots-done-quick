@@ -121,18 +121,10 @@ else {
 		}
 
 		// Get return values from database
-		$query = 'SELECT active, provider, identifier, script, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, autopostMode, autopostTimes, actionIfLong, showSource, hideOnBotList, name, thumb FROM bbdq WHERE id = ?';
-		$stmt = $conn->prepare($query);
-		$stmt->bind_param('i', $id);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
 
-		$data = $result->fetch_assoc();
-		$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource', 'hideOnBotList']);
-		if ($data['autopostMode'] === 1) {
-			$data['minutesBetweenPosts'] = 720;
-		}
+		load_function('get_bot_details');
+		get_bot_details($conn, $id, true);
+
 		$c = [
 			'data' => $data
 		];

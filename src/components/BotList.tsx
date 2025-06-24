@@ -23,15 +23,15 @@ const BotList = () => {
 	}, [ sort, page ]);
 
 	const getBots = async (sort? : string, limit = 50, page = 1) => {
-		let queryString = '';
+		let queryString = '?';
 		if (sort === 'activeSince') {
-			queryString += '&sort=activeSince';
+			queryString += 'sort=activeSince&';
 		}
 		if (page) {
-			queryString += '&page=' + page;
+			queryString += `page=${page}&`;
 		}
 		queryString += '&count=' + limit;
-		const res = await fetch( backendURI + '?mode=list' + queryString );
+		const res = await fetch( `${backendURI}/bots/${queryString}`);
 		const json = await res.json();
 		return { data: json.data, total: json.total };
 	}

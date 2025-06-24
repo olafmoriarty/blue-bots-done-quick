@@ -314,6 +314,20 @@ main ul {
 	border-top: dotted 1px var(--headers);
 }
 
+.cookie-warning {
+	background-color: var(--yellow);
+	padding: 1rem;
+	border-radius: .25rem;
+	border: solid 1px var(--black);
+}
+
+.cookie-warning > :first-child {
+	margin-top: 0;
+}
+.cookie-warning > :last-child {
+	margin-bottom: 0;
+}
+
 input, select {
 	display: block;
 	margin-bottom: 1rem;

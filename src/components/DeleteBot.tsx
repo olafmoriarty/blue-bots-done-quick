@@ -18,12 +18,11 @@ const DeleteBot = () => {
 		setIsFetching(true);
 
 		const body = JSON.stringify({
-			mode: 'delete',
 			provider: loginDetails.provider,
 			identifier: loginDetails.identifier,
 			password: loginDetails.password,
 		});
-		const res = await fetch( backendURI, {
+		const res = await fetch( `${backendURI}/bots//`, {
 			method: 'DELETE',
 			body: body,
 			headers: {

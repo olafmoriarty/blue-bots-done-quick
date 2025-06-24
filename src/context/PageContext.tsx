@@ -12,7 +12,7 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 
 	const navigate = useNavigate();
 
-	const backendURI = import.meta.env.DEV ? 'http://localhost/tracery/' : 'https://bluebotsdonequick.com/backend/';
+	const backendURI = import.meta.env.DEV ? 'http://localhost/tracery/v1' : 'https://api.bluebotsdonequick.com/v1';
 
 	useEffect(() => {
 		if (botSettings) {
@@ -21,18 +21,18 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 	}, [botSettings]);
 
 
-	const attemptLogin = async (provider : string, identifier : string, password : string) => {
+	const attemptLogin = async (provider : string, identifier : string, password : string, rememberMe? : boolean) => {
 		setIsWorking(true);
 		setLoginDetails({ provider: provider, identifier: identifier, password: password });
 		setError('');
 		const body = JSON.stringify({
-			mode: 'login',
 			provider: provider,
 			identifier: identifier,
 			password: password,
+			rememberMe: rememberMe ? true : false,
 		})
 		try {
-			const res = await fetch(backendURI, {
+			const res = await fetch(`${backendURI}/auth/`, {
 				method: 'POST',
 				body: body,
 			});
@@ -95,7 +95,7 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 
 
 type ContextType = {
-	attemptLogin : (provider : string, identifier : string, password : string) => void,
+	attemptLogin : (provider : string, identifier : string, password : string, rememberMe? : boolean) => void,
 	botSettings? : BotSettingsFromAPI,	
 	loginDetails : LoginInformation|undefined,
 	error : string,
@@ -111,6 +111,7 @@ type LoginInformation = {
 }
 
 export type BotSettingsFromAPI = {
+	id : number,
 	active : boolean,
 	provider : string,
 	identifier : string,

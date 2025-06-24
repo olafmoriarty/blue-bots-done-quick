@@ -1,6 +1,6 @@
 <?php
 
-include('tlds.php');
+include 'tlds.php';
 define( "MENTION_REGEX",  "/(^|\s|\()(@)([a-zA-Z0-9.-]+)(\b)/");
 define( "URL_REGEX",  "/(^|\s|\()((https?:\/\/[\S]+)|((?<domain>[a-z][a-z0-9]*(\.[a-z0-9]+)+)[\S]*))/im");
 define("TRAILING_PUNCTUATION_REGEX", "/\p{P}+$/");

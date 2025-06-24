@@ -3,13 +3,13 @@
 
 // Get MySQL and Bluesky login details
 global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-include('secrets.php');
+include  '../secrets.php';
 
 // Get fetch function
-include('functions.php');
+include  '../utils/functions.php';
 
 // Get generate_post function
-include('generate.php');
+include  '../parser/generate.php';
 
 // Connect to MySQL
 $conn = mysqli_connect(

@@ -123,7 +123,7 @@ if (count($fields_to_update)) {
 // Post now
 if (isset($body['postNow']) && $body['postNow']) {
 	// Get generate_post function
-	include('generate.php');
+	include_once API_FOLDER . '/parser/generate.php';
 
 	$query = 'SELECT id, provider, script, msg, actionIfLong, language, n_value FROM bbdq WHERE id = ?';
 	$stmt = $conn->prepare($query);

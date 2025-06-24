@@ -1,5 +1,5 @@
 <?php
-include('secrets.php');
+include 'secrets.php';
 
 $conn = mysqli_connect(
 	$mysql_host, 
