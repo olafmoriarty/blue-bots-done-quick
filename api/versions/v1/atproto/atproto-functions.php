@@ -440,16 +440,16 @@ function upload_blob_from_url( $url, $provider, $token ) {
 
 		curl_setopt($curl, CURLOPT_HTTPGET, true);
 
-		if (!str_contains($url, 'twimg')) {
+		if (str_contains($url, 'wiki')) {
 			curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)');
 		}
 		
 		$image = curl_exec($curl);
 		$content_type = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
 
-		if ($content_type !== 'image/jpeg' && $content_type !== 'image/png') {
-			return;
-		}
+//		if ($content_type !== 'image/jpeg' && $content_type !== 'image/png') {
+//			return;
+//		}
 
 		// Get image dimensions
 		$image_size = getimagesize('data:' . $content_type . ';base64, ' . base64_encode($image));

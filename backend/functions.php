@@ -45,7 +45,7 @@ function fetch($url, $options = []) {
 		curl_setopt($curl, CURLOPT_HTTPGET, true);
 	}
 
-	if (!str_contains($url, 'twimg')) {
+	if (str_contains($url, 'wiki')) {
 		curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: BlueBotsDoneQuick/0.0 (https://bluebotsdonequick.com/;olafmoriarty@gmail.com)');
 	}
 	
