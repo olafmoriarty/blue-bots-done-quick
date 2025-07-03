@@ -321,3 +321,34 @@ function deactivate_bot( $conn, $id ) {
 	$stmt->execute();
 	$stmt->close();
 }
+
+// This function is stolen from Stack Overflow user Thao Ngo:
+// https://stackoverflow.com/questions/40582161/how-to-properly-use-bearer-tokens
+function get_authorization_header() {
+    $headers = null;
+    if (isset($_SERVER['Authorization'])) {
+        $headers = trim($_SERVER["Authorization"]);
+    }
+    else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
+        $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+    } elseif (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+        // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
+        $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+        //print_r($requestHeaders);
+        if (isset($requestHeaders['Authorization'])) {
+            $headers = trim($requestHeaders['Authorization']);
+        }
+    }
+    return $headers;
+}
+
+function base64url_decode($data) {
+	// Decode base64url strings
+	return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+}
+
+function base64url_encode($data) {
+	// Encode strings as base64url
+	return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}

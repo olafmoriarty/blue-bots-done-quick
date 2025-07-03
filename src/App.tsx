@@ -47,6 +47,10 @@ const App = () => {
 					element: <CreateBot />,
 				},
 				{
+					path: 'edit/:id',
+					element: <EditBot />,
+				},
+				{
 					path: 'edit',
 					element: <EditBot />,
 				},

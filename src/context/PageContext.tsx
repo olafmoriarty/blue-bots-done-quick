@@ -9,14 +9,22 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 	const [error, setError] = useState('');
 	const [botSettings, setBotSettings] = useState(undefined as BotSettingsFromAPI|undefined);
 	const [isWorking, setIsWorking] = useState(false);
+	const [accessToken, setAccessToken] = useState('');
+//	const [refreshToken, setRefreshToken] = useState('');
 
 	const navigate = useNavigate();
 
 	const backendURI = import.meta.env.DEV ? 'http://localhost/tracery/v1' : 'https://api.bluebotsdonequick.com/v1';
 
+	const headers : HeadersInit = {
+		'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+		"Content-Type": "application/json",
+		"Accept": "application/json",
+	};
+
 	useEffect(() => {
-		if (botSettings) {
-			navigate('/edit');
+		if (botSettings && botSettings.id) {
+			navigate(`/edit/${botSettings.id}`);
 		}
 	}, [botSettings]);
 
@@ -26,15 +34,17 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 		setLoginDetails({ provider: provider, identifier: identifier, password: password });
 		setError('');
 		const body = JSON.stringify({
-			provider: provider,
 			identifier: identifier,
 			password: password,
+			provider: provider,
 			rememberMe: rememberMe ? true : false,
-		})
+			returnData : true,
+		});
 		try {
 			const res = await fetch(`${backendURI}/auth/`, {
 				method: 'POST',
 				body: body,
+				headers: headers,
 			});
 			const json = await res.json();
 			if (!json.status) {
@@ -42,6 +52,14 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 				setIsWorking(false);
 				navigate('/login');
 				return;
+			}
+			if (json.status) {
+				if (json.accessToken) {
+					setAccessToken(json.accessToken);
+				}
+				if (json.refreshToken) {
+//					setRefreshToken(json.refreshToken);
+				}
 			}
 			if (json.status && json.data) {
 				setBotSettings(json.data);

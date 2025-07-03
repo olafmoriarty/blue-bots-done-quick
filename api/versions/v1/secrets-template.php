@@ -9,6 +9,10 @@ $mysql_pass = '';
 // Key used for encrypting passwords
 $encryption_key = '';
 
+// Keys used for hashing tokens. Must be DIFFERENT
+$jwt_access_secret = '';
+$jwt_refresh_secret = '';
+
 // The username and app password for a Bluesky account you've created for 
 // use in this project. Will be used for fetching profile display names, 
 // follower counts and avatar URLs - for the actual bots, the accounts of

@@ -42,6 +42,9 @@ if (!in_array($endpoint, $valid_endpoints)) {
 	return_error('INVALID_ENDPOINT', '404');
 }
 
+// Authenticate user
+include 'auth/authenticate_user.php';
+
 include API_FOLDER . '/' . $endpoint . '/' . $endpoint . '.php';
 
 // If nothing has been returned by any endpoint, return an empty object.

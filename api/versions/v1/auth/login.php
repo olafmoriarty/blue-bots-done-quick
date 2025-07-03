@@ -1,7 +1,11 @@
 <?php
 global $encryption_key, $conn, $body;
+
 method_check(['POST']);
 parameter_check($body, ['identifier', 'password']);
+
+$identifier = $body['identifier'];
+$password = $body['password'];
 
 // Check provider, identifier and password
 $provider = empty($body['provider']) ? 'https://bsky.social' : $body['provider'];
@@ -10,37 +14,36 @@ if (!str_contains($provider, '://')) {
 	return_error('PROVIDER_PROTOCOL_MISSING');
 }
 
-if (str_starts_with($body['identifier'], '@')) {
-	$body['identifier'] = substr($body['identifier'], 1);
+if (str_starts_with($identifier, '@')) {
+	$identifier = substr($identifier, 1);
 }
 
 // Check if user exists
 
+$query = 'SELECT id, password, iv FROM bbdq WHERE identifier = ? AND provider ';
 if ($provider === 'https://bsky.social') {
-	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, autopostMode, autopostTimes, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, hideOnBotList, name, thumb FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
-	$stmt = $conn->prepare($query);
-	$stmt->bind_param('s', $body['identifier']);
-	$stmt->execute();
-	$result = $stmt->get_result();
-	$stmt->close();
+	$query .= 'LIKE ?';
+	$query_provider = '%bsky%';
 }
 else {
-	$query = 'SELECT id, password, iv, active, provider, identifier, script, replyMode, replyScript, autopostMode, autopostTimes, language, minutesBetweenPosts, msg, reply, actionIfLong, showSource, hideOnBotList, name, thumb FROM bbdq WHERE identifier = ? AND provider = ?';
-	$stmt = $conn->prepare($query);
-	$stmt->bind_param('ss', $body['identifier'], $provider);
-	$stmt->execute();
-	$result = $stmt->get_result();
-	$stmt->close();
+	$query .= '= ?';
+	$query_provider = $provider;
 }
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param('ss', $identifier, $query_provider);
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
 
 if ($result->num_rows) {
 	// Check if password is correct
 	$row = $result->fetch_assoc();
 	$data = $row;
-	$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-	if ($password !== $body['password']) {
+	$saved_password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
+	if ($saved_password !== $password) {
 		// Double-check against bsky in case password has changed
-		$session = atproto_create_session($provider, $body['identifier'], $body['password']);
+		$session = atproto_create_session($provider, $identifier, $password);
 		if (isset($session['error'])) {
 			// Nope, can't authenticate there either
 			return_error('WRONG_USERNAME_OR_PASSWORD', '401');
@@ -48,7 +51,7 @@ if ($result->num_rows) {
 		// Ah, our locally stored password is wrong! We should update it and carry on, then.
 		$iv = openssl_random_pseudo_bytes(16);
 		$iv_hex = bin2hex($iv);
-		$encrypted_password = openssl_encrypt($body['password'], 'aes-256-cbc', $encryption_key, 0, $iv);
+		$encrypted_password = openssl_encrypt($password, 'aes-256-cbc', $encryption_key, 0, $iv);
 
 		$query = 'UPDATE bbdq SET password = ?, iv = ?, accessJwt = null, accessJwt_time = null, refreshJwt = null, refreshJwt_time = null WHERE id = ?';
 		$stmt = $conn->prepare($query);
@@ -57,36 +60,25 @@ if ($result->num_rows) {
 		$stmt->close();
 	}
 
-	// User authenticated, return data
-	$data = values_to_boolean($data, ['active', 'actionIfLong', 'showSource', 'hideOnBotList']);
-	if ($data['autopostMode'] === 1) {
-		$data['minutesBetweenPosts'] = 720;
-	}
-	unset($data['password']);
-	unset($data['iv']);
-	$c = [
-		'data' => $data
-	];
-	return_json($c);
-
+	$id = $row['id'];
 }
 else {
 	// User is not in database, check if they exist on Bluesky
-	$session = atproto_create_session($provider, $body['identifier'], $body['password']);
+	$session = atproto_create_session($provider, $identifier, $password);
 	if (isset($session['error'])) {
 		// Couldn't authenticate user AT ALL
 		return_error('WRONG_USERNAME_OR_PASSWORD', '401');
 	}
 	else {
 		// In case user tried logging in with email or DID (even though we specifically told them to use the handle!), fix that
-		if ($body['identifier'] !== $session['handle']) {
-			$body['identifier'] = $session['handle'];
+		if ($identifier !== $session['handle']) {
+			$identifier = $session['handle'];
 		}
 
 		// Encrypt password
 		$iv = openssl_random_pseudo_bytes(16);
 		$iv_hex = bin2hex($iv);
-		$encrypted_password = openssl_encrypt( $body['password'], 'aes-256-cbc', $encryption_key, 0, $iv );
+		$encrypted_password = openssl_encrypt( $password, 'aes-256-cbc', $encryption_key, 0, $iv );
 
 		// Double-check if DID already exists
 		$query = 'SELECT id FROM bbdq WHERE did = ?';
@@ -113,24 +105,40 @@ else {
 			// Create user!
 			$query = 'INSERT INTO bbdq (provider, did, identifier, password, iv) VALUES (?, ?, ?, ?, ?)';
 			$stmt = $conn->prepare($query);
-			$stmt->bind_param('sssss', $provider, $session['did'], $body['identifier'], $encrypted_password, $iv_hex);
+			$stmt->bind_param('sssss', $provider, $session['did'], $identifier, $encrypted_password, $iv_hex);
 			$stmt->execute();
 			$stmt->close();
 
 			$id = $conn->insert_id;
 		}
-
-		// Get return values from database
-
-		load_function('get_bot_details');
-		get_bot_details($conn, $id, true);
-
-		$c = [
-			'data' => $data
-		];
-
-		return_json($c);
 	}
 }
 
-return_json([]);
+// Create tokens
+$ids = [ ...$ids, $id ];
+
+include_once('create_token.php');
+
+$access_token = create_token( [
+	'bots' => $ids,
+], $jwt_access_secret );
+
+$refresh_token = create_token( [
+	'bots' => $ids,
+], $jwt_refresh_secret, 60 * 24 * 180 );
+
+
+// Return login details
+$c = [
+	'accessToken' => $access_token,
+	'refreshToken' => $refresh_token,
+	'bots' => $ids,
+];
+if (isset($body['returnData']) && $body['returnData']) {
+	// Get data to return
+	load_function('get_bot_details');
+	$data = get_bot_details($conn, $id, true);
+	$c['data'] = $data;
+}
+return_json($c);
+

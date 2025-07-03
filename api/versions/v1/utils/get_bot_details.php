@@ -1,7 +1,7 @@
 <?php
 
 function get_bot_details( $conn, $id, $full = false ) {
-	$query = 'SELECT name, did, identifier, lastPostText, thumb, script, showSource, followers, activeSince';
+	$query = 'SELECT id, name, did, identifier, lastPostText, thumb, script, showSource, followers, activeSince';
 	if ($full) {
 		$query .= ', active, provider, replyMode, replyScript, language, minutesBetweenPosts, msg, reply, autopostMode, autopostTimes, actionIfLong, hideOnBotList'; 
 	}
