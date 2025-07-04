@@ -1,19 +1,8 @@
 <?php
 // This script is called automatically by a cron job every 24 hours
 
-// Get MySQL and Bluesky login details
-global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-include '../secrets.php';
-// Get fetch function
-include '../utils/functions.php';
-
-// Connect to MySQL
-$conn = mysqli_connect(
-	$mysql_host, 
-	$mysql_user,
-	$mysql_pass,
-	$mysql_db
-);
+// Some initial setup 
+include('config.php');
 
 function saveProfile(mixed $profile, false|mysqli $conn): void {
 	$avatar      = $profile['avatar'] ?? '';

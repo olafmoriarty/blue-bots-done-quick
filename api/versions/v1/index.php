@@ -1,20 +1,7 @@
 <?php
 
-// Script directory
-define('API_FOLDER', dirname(__FILE__));
-
-// Get MySQL and Bluesky login details
-global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-include API_FOLDER . '/secrets.php';
-include API_FOLDER . '/utils/functions.php';
-
-// Connect to MySQL
-$conn = mysqli_connect(
-	$mysql_host, 
-	$mysql_user,
-	$mysql_pass,
-	$mysql_db
-);
+// Some initial setup 
+include('config.php');
 
 // Return empty response on preflight check
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

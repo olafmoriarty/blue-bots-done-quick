@@ -5,7 +5,7 @@ import BotPreviewType from "../types/BotPreviewType";
 import Title from "./Title";
 
 const FrontPage = () => {
-	const {backendURI} = usePage();
+	const {apiFetch} = usePage();
 	const [newBots, setNewBots] = useState([] as BotPreviewType[]);
 	const [popularBots, setPopularBots] = useState([] as BotPreviewType[]);
 
@@ -23,7 +23,7 @@ const FrontPage = () => {
 			queryString += 'sort=activeSince&';
 		}
 		queryString += 'count=' + limit;
-		const res = await fetch( `${backendURI}/bots/${queryString}` );
+		const res = await apiFetch( `/bots/${queryString}` );
 		const json = await res.json();
 		return json.data;
 	}

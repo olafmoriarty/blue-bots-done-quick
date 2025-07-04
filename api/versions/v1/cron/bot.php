@@ -1,23 +1,11 @@
 <?php
 // This script is called automatically by a cron job every five minutes
 
-// Get MySQL and Bluesky login details
-global $mysql_host, $mysql_user, $mysql_pass, $mysql_db;
-include  '../secrets.php';
-
-// Get fetch function
-include  '../utils/functions.php';
+// Some initial setup 
+include('../config.php');
 
 // Get generate_post function
 include  '../parser/generate.php';
-
-// Connect to MySQL
-$conn = mysqli_connect(
-	$mysql_host, 
-	$mysql_user,
-	$mysql_pass,
-	$mysql_db
-);
 
 // The function that is called when the bot runs
 function run_bot() {

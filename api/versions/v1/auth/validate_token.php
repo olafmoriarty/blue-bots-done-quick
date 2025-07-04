@@ -14,21 +14,20 @@ function validate_token($token, $secret) {
 
 	// It's valid, so decode the payload.
 	$payload_json = base64url_decode($token_arr[1]);
-	$payload = json_decode($payload_json);
+	$payload = json_decode($payload_json, true);
 
 	// Check if the token has expired.
-	if (!is_object($payload) || !isset($payload->exp) || $payload->exp < time()) {
+	if (!is_array($payload) || !isset($payload['exp']) || $payload['exp'] < time()) {
 		return [
 			'valid' => false,
 			'payload_json' => $payload_json,
-			'error' => 'TOKEN_EXPIRED'
+			'error' => 'TOKEN_EXPIRED',
 		];
 	}
 
 	// It's not expired, let's return some values!
 	return [
 		'valid' => true,
-		'id' => $payload->id,
-		'level' => $payload->level,
+		'payload' => $payload,
 	];
 } // validate_token()

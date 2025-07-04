@@ -4,7 +4,7 @@ import ErrorMessage from "./ErrorMessage";
 
 const DeleteBot = () => {
 
-	const {loginDetails, backendURI, logOut} = usePage();
+	const {loginDetails, apiFetch, logOut} = usePage();
 
 	const [error, setError] = useState('');
 	const [yes, setYes] = useState('');
@@ -22,7 +22,7 @@ const DeleteBot = () => {
 			identifier: loginDetails.identifier,
 			password: loginDetails.password,
 		});
-		const res = await fetch( `${backendURI}/bots//`, {
+		const res = await apiFetch( `/bots/`, {
 			method: 'DELETE',
 			body: body,
 			headers: {

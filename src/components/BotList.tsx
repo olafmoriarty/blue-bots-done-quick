@@ -11,7 +11,7 @@ const BotList = () => {
 	const page = params.get('page');
 	const [total, setTotal] = useState(0);
 	const [bots, setBots] = useState(undefined as BotPreviewType[]|undefined);
-	const {backendURI} = usePage();
+	const {apiFetch} = usePage();
 
 	useEffect(() => {
 		setBots(undefined);
@@ -31,7 +31,7 @@ const BotList = () => {
 			queryString += `page=${page}&`;
 		}
 		queryString += '&count=' + limit;
-		const res = await fetch( `${backendURI}/bots/${queryString}`);
+		const res = await apiFetch( `/bots/${queryString}`);
 		const json = await res.json();
 		return { data: json.data, total: json.total };
 	}

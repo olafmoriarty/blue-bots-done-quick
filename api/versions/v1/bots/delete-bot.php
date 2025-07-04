@@ -1,48 +1,14 @@
 <?php
 global $body, $conn, $encryption_key;
 method_check(['DELETE']);
-parameter_check($body, ['identifier', 'password']);
 
-// Check provider, identifier and password
-$provider = empty($body['provider']) ? 'https://bsky.social' : $body['provider'];
-
-if (!str_contains($provider, '://')) {
-	return_error('PROVIDER_PROTOCOL_MISSING');
+// Check if there's a valid access token
+if (!$auth_result['success']) {
+	return_error($auth_result['error'], '401');
 }
-
-if (str_starts_with($body['identifier'], '@')) {
-	$body['identifier'] = substr($body['identifier'], 1);
-}
-
-// Get user
-if ($provider === 'https://bsky.social') {
-	$query = 'SELECT id, password, iv FROM bbdq WHERE identifier = ? AND provider LIKE "%bsky%"';
-	$stmt = $conn->prepare($query);
-	$stmt->bind_param('s', $body['identifier']);
-	$stmt->execute();
-	$result = $stmt->get_result();
-	$stmt->close();
-}
-else {
-	$query = 'SELECT id, password, iv FROM bbdq WHERE identifier = ? AND provider = ?';
-	$stmt = $conn->prepare($query);
-	$stmt->bind_param('ss', $body['identifier'], $provider);
-	$stmt->execute();
-	$result = $stmt->get_result();
-	$stmt->close();
-}
-
-if (!$result->num_rows) {
-	// Username does not exist.
-	return_error('WRONG_USERNAME_OR_PASSWORD', '401');
-}
-
-// Username exists, check if password is correct
-$row = $result->fetch_assoc();
-$password = openssl_decrypt($row['password'], 'aes-256-cbc', $encryption_key, 0, hex2bin($row['iv']));
-if ($password !== $body['password']) {
-	// Wrong password
-	return_error('WRONG_USERNAME_OR_PASSWORD', '401');
+// Check that that access token covers this particular bot
+if (!in_array($id, $ids)) {
+	return_error('NOT_AUTHORIZED_TO_EDIT_THIS_BOT', '403');
 }
 
 // Okay, let's delete the bot

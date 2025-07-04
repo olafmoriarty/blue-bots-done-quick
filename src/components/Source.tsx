@@ -9,7 +9,7 @@ const Source = () => {
 	const params = useParams();
 	const {identifier} = params;
 	const [data, setData] = useState(undefined as BotPreviewType|null|undefined);
-	const {backendURI} = usePage();
+	const {apiFetch} = usePage();
 
 	useEffect(() => {
 		if (!identifier) {
@@ -23,7 +23,7 @@ const Source = () => {
 	}, [identifier]);
 
 	const getBot = async (handle : string) => {
-		const res = await fetch( `${backendURI}/bots/${encodeURIComponent(handle)}` );
+		const res = await apiFetch( `/bots/${encodeURIComponent(handle)}` );
 		const json = await res.json();
 		return json.data;
 	}

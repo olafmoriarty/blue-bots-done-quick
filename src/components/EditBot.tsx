@@ -37,7 +37,7 @@ const defaultReplyCode = `{
 	".": "#origin#"
 }`;
 
-	const {botSettings, loginDetails, backendURI, logOut} = usePage();
+	const {botSettings, loginDetails, apiFetch, logOut} = usePage();
 
 	const navigate = useNavigate();
 
@@ -235,9 +235,6 @@ const defaultReplyCode = `{
 		}
 
 		const body = JSON.stringify({
-			provider: loginDetails.provider,
-			identifier: loginDetails.identifier,
-			password: loginDetails.password,
 			script: script,
 			msg: origin,
 			reply: reply,
@@ -253,7 +250,7 @@ const defaultReplyCode = `{
 			hideOnBotList: hideOnBotList,
 			postNow: postNow ? true : false,
 		});
-		const res = await fetch( `${backendURI}/bots/${botSettings.id}/`, {
+		const res = await apiFetch( `/bots/${botSettings.id}/`, {
 			method: 'PATCH',
 			body: body,
 			headers: {

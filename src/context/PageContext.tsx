@@ -16,18 +16,26 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 
 	const backendURI = import.meta.env.DEV ? 'http://localhost/tracery/v1' : 'https://api.bluebotsdonequick.com/v1';
 
-	const headers : HeadersInit = {
-		'Authorization': accessToken ? `Bearer ${accessToken}` : '',
-		"Content-Type": "application/json",
-		"Accept": "application/json",
-	};
-
 	useEffect(() => {
 		if (botSettings && botSettings.id) {
 			navigate(`/edit/${botSettings.id}`);
 		}
 	}, [botSettings]);
 
+	const apiFetch = async ( endpoint : string, options? : RequestInit ) => {
+		let newOptions = { ...options };
+		if ( accessToken ) {
+			newOptions.headers = {
+				'Authorization': `Bearer ${accessToken}`,
+				'Content-Type': "application/json",
+				'Accept': "application/json",
+				...options?.headers,
+			};
+		}
+		console.log(newOptions);
+		const res = await fetch(  `${backendURI}${endpoint}`, newOptions);
+		return res;
+	}
 
 	const attemptLogin = async (provider : string, identifier : string, password : string, rememberMe? : boolean) => {
 		setIsWorking(true);
@@ -41,10 +49,9 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 			returnData : true,
 		});
 		try {
-			const res = await fetch(`${backendURI}/auth/`, {
+			const res = await apiFetch(`/auth/`, {
 				method: 'POST',
 				body: body,
-				headers: headers,
 			});
 			const json = await res.json();
 			if (!json.status) {
@@ -99,7 +106,7 @@ export const PageContextProvider = (props : { children : JSX.Element|JSX.Element
 		botSettings: botSettings,
 		loginDetails: loginDetails,
 		error: error,
-		backendURI: backendURI,
+		apiFetch: apiFetch,
 		isWorking: isWorking,
 		logOut: logOut,
 	}
@@ -117,7 +124,7 @@ type ContextType = {
 	botSettings? : BotSettingsFromAPI,	
 	loginDetails : LoginInformation|undefined,
 	error : string,
-	backendURI : string,
+	apiFetch : ( endpoint : string, options? : RequestInit ) => Promise<Response>,
 	isWorking : boolean,
 	logOut : (returnTo? : string) => void,
 };
